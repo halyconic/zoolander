@@ -70,39 +70,52 @@ const Status BufMgr::allocBuf(int & frame)
 
 
 
-
+	return OK;
 }
 
 	
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
+	/*
+	 * First impression of how code works, probably wrong
+	 */
 
 
 
-
-
+	return OK;
 }
 
 
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
+	/*
+	 * First impression of how code works, probably wrong
+	 */
 
+	if (bufTable->pinCnt <= 0)
+		return PAGENOTPINNED;
 
+	bufTable->pinCnt--;
+	if (dirty)
+		bufTable->dirty = true;
 
+	// Need to check if page is here first
 
-
+	return OK;
 }
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) 
 {
+	/*
+	 * First impression of how code works, probably wrong
+	 */
+	int frame = file->allocatePage(pageNo);
+	allocBuf(frame);
+	hashTable->insert(file, pageNo, frame);
+	bufTable->Set(file, pageNo);
 
-
-
-
-
-
-
+	return OK;
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 
