@@ -149,12 +149,22 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
-	/*
-	 * First impression of how code works, probably wrong
-	 */
-	int frame = file->allocatePage(pageNo);
-	allocBuf(frame);
-	hashTable->insert(file, pageNo, frame);
+	// Allocate empty page
+	Status s = file->allocatePage(pageNo);
+
+	if (s == UNIXERR)
+		return s;
+
+	// Obtain buffer pool frame
+	int frameNo = -1;
+	s = allocBuf(frameNo);
+	if (s == BUFFEREXCEEDED)
+		return s;
+
+	s = hashTable->insert(file, pageNo, frameNo);
+	if (s == HASHTBLERROR)
+		return s;
+
 	bufTable->Set(file, pageNo);
 
 	return OK;
