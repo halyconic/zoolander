@@ -140,9 +140,15 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     if(s == HASHNOTFOUND)
     	return s;
 
-	bufTable->pinCnt--;
+	BufDesc* tmpbuf = &(bufTable[frameNo]);
+	tmpbuf->pinCnt--;
+	if(dirty)
+	{
+	    tmpbuf->dirty = true;
+	}
+	/*bufTable->pinCnt--;
 	if (dirty)
-		bufTable->dirty = true;
+		bufTable->dirty = true;*/
 
 	return OK;
 }
