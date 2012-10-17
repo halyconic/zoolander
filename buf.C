@@ -149,12 +149,24 @@ const Status BufMgr::allocBuf(int & frame)
 	return OK;
 }
 
-
+/*
+* Function: readPage
+*
+* Inputs: File* file - Pointer to File to have page allocated in
+* const int PageNo - the page number of the file that we want to read
+* Page*& page - Pointer to the buffer frame allocated for the page
+*
+* Returns: OK - if no errors occured
+* UNIXERR - if a unix error occurs
+* BUFFEREXCEEDED - if all buffer frames are pinned
+* HASHTBLERROR - if a hash table error occured
+*
+* Description: This method reads a page from disk into the buffer pool.
+* If the page is already in the buffer pool, we just update appropriate values.
+*/
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
-	/*
-	 * First impression of how code works, probably wrong
-	 */
+
 	//check whether page is already in buffer pool
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
