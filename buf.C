@@ -8,6 +8,7 @@
 #include "page.h"
 #include "buf.h"
 
+
 #define ASSERT(c)  { if (!(c)) { \
 		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
                        cerr << "This condition should hold: " #c << endl; \
@@ -70,16 +71,16 @@ const Status BufMgr::allocBuf(int & frame)
 
 
 
-
+	return OK;
 }
 
 
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
-/*
-* First impression of how code works, probably wrong
-*/
-//check whether page is already in buffer pool
+	/*
+	 * First impression of how code works, probably wrong
+	 */
+	//check whether page is already in buffer pool
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
     if(s == HASHNOTFOUND)
@@ -123,35 +124,33 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         //return frame pointer
         page = &(bufPool[frameNo]);
     }
-return OK;
+	return OK;
 }
 
 
-
-
-cconst Status BufMgr::unPinPage(File* file, const int PageNo,
-const bool dirty)
+const Status BufMgr::unPinPage(File* file, const int PageNo,
+			       const bool dirty)
 {
-// If pin count is 0, return
-if (bufTable->pinCnt <= 0)
-return PAGENOTPINNED;
+	// If pin count is 0, return
+	if (bufTable->pinCnt <= 0)
+		return PAGENOTPINNED;
 
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
     if(s == HASHNOTFOUND)
      return s;
 
-BufDesc* tmpbuf = &(bufTable[frameNo]);
-tmpbuf->pinCnt--;
-if(dirty)
-{
-tmpbuf->dirty = true;
-}
-/*bufTable->pinCnt--;
-if (dirty)
-bufTable->dirty = true;*/
+	BufDesc* tmpbuf = &(bufTable[frameNo]);
+	tmpbuf->pinCnt--;
+	if(dirty)
+	{
+	    tmpbuf->dirty = true;
+	}
+	/*bufTable->pinCnt--;
+	if (dirty)
+		bufTable->dirty = true;*/
 
-return OK;
+	return OK;
 }
 
 /*
