@@ -205,10 +205,12 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     }
 
     // set page for returning;
-    page = bufTable[frame];
+    page = &(bufPool[frame]);
 
     // set file correctly
-    bufTable->Set(file, *pageNo);
+    //bufTable->Set(file, *pageNo);
+    BufDesc* tmpbuf = &(bufTable[frame]);
+    tmpbuf->Set(file, *pageNo);
 
     return status;
 
