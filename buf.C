@@ -80,7 +80,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 	/*
 	 * First impression of how code works, probably wrong
 	 */
-	 //check whether page is already in buffer pool
+	//check whether page is already in buffer pool
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
     if(s == HASHNOTFOUND)
@@ -121,7 +121,6 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         tmpbuf->refbit = true;
         tmpbuf->pinCnt++;
 
-
         //return frame pointer
         page = &(bufPool[frameNo]);
     }
@@ -132,18 +131,18 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo,
 			       const bool dirty)
 {
-	/*
-	 * First impression of how code works, probably wrong
-	 */
-
+	// If pin count is 0, return
 	if (bufTable->pinCnt <= 0)
 		return PAGENOTPINNED;
+
+    int frameNo = -1;
+    Status s = hashTable->lookup(file, PageNo, frameNo);
+    if(s == HASHNOTFOUND)
+    	return s;
 
 	bufTable->pinCnt--;
 	if (dirty)
 		bufTable->dirty = true;
-
-	// Need to check if page is here first
 
 	return OK;
 }
