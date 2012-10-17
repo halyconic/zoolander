@@ -143,6 +143,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo,
 			       const bool dirty)
 {
+	// Get frame containing page
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
     if (s == HASHNOTFOUND)
@@ -150,6 +151,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     	return s;
     }
 
+    // Attempt to unpin page
 	BufDesc* tmpbuf = &(bufTable[frameNo]);
 	if (tmpbuf->pinCnt <= 0)
 	{
@@ -157,6 +159,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 	}
 	tmpbuf->pinCnt--;
 
+	// If page is dirty, set dirty bit in bufTable
 	if (dirty)
 	{
 	    tmpbuf->dirty = true;
