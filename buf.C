@@ -8,7 +8,6 @@
 #include "page.h"
 #include "buf.h"
 
-
 #define ASSERT(c)  { if (!(c)) { \
 		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
                        cerr << "This condition should hold: " #c << endl; \
@@ -63,14 +62,90 @@ BufMgr::~BufMgr() {
     delete [] bufPool;
 }
 
-
+/*
+* Function: allocBuf
+*
+* Inputs: int &frame - an address to return the allocated frame in*
+* Returns:  OK - if no error
+*           BUFFEREXCEEDED - if all buffer frames are pinned.
+*           UNIXERR - if I/O layer returned an error while writing dirty page to disk
+*
+* Description: Allocates a free frame using the clock algorithm; writing a 
+*   dirty page to disk if necessary. This function is private and gets called 
+*   by readPage() and allocPage().
+*
+*   This utilizes the clock algorithm as described in the jpg located at this link:
+*       http://pages.cs.wisc.edu/~cs564-1/stage3_files/image004.jpg
+*
+*/
 const Status BufMgr::allocBuf(int & frame)
 {
+    int numPinned = 0;
+    Status status;
+    bool foundFrame = false;
 
+    while(!foundFrame){
 
+        // advance clock pointer
+        advanceClock();
+        
+        // check if valid, if not mark foundFrame true;
+        if(!bufTable[clockHand].valid){
+            
+            foundFrame = true;
 
+        }
+        else{ // indicates valid == true
 
+            // check if refbit set
+            if(!bufTable[clockHand].refbit){
+            
+                // check if page pinned
+                if(bufTable[clockHand].pinCnt <= 0){
+                
+                    // increament numPinned and check if all frames pinned
+                    numPinned ++;
+                    if ( numPinned > numBufs){
+                        return BUFFEREXCEEDED;
+                    }
 
+                    // check dirty bit
+                    if(bufTable[clockHand].dirty){
+                        
+                        //extract File* from butTable
+                        File* file;
+                        file = bufTable[clockHand].file;
+
+                        // write page to disk
+                        status = file->writePage(bufTable[clockHand].pageNo, &bufPool[clockHand]);
+
+                        // check for error, if error return error
+                        if(status == UNIXERR){
+                            return status;
+                        }
+
+                    }// end dirty bit check
+                    
+                    // useable frame found set frameFound
+                    foundFrame = true;
+                    
+                } // end page pinned check
+
+            }// end refbit check
+            else{
+                // clear refbit
+                bufTable[clockHand].refbit = true;
+            }
+        
+        }// end else (valid == true)
+ 
+    } // end while
+
+    // Clear buffer frame and set returned frame 
+    bufTable[clockHand].Clear();
+    
+    frame = clockHand;
+    
 	return OK;
 }
 
