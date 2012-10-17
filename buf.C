@@ -131,24 +131,24 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo,
 			       const bool dirty)
 {
-	// If pin count is 0, return
-	if (bufTable->pinCnt <= 0)
-		return PAGENOTPINNED;
-
     int frameNo = -1;
     Status s = hashTable->lookup(file, PageNo, frameNo);
-    if(s == HASHNOTFOUND)
-     return s;
+    if (s == HASHNOTFOUND)
+    {
+    	return s;
+    }
 
 	BufDesc* tmpbuf = &(bufTable[frameNo]);
+	if (tmpbuf->pinCnt <= 0)
+	{
+		return PAGENOTPINNED;
+	}
 	tmpbuf->pinCnt--;
-	if(dirty)
+
+	if (dirty)
 	{
 	    tmpbuf->dirty = true;
 	}
-	/*bufTable->pinCnt--;
-	if (dirty)
-		bufTable->dirty = true;*/
 
 	return OK;
 }
@@ -174,32 +174,33 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 */
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
-
-    Status status;
+    Status status = OK;
 
     // allocate new page in file, pageNo is set for return at this point
     status = file->allocatePage(pageNo);
 
-
     // check for error, if error return error
-    if(status != OK){
+    if (status != OK)
+    {
         return status;
     }
 
     int frame;
     // allocate buffer frame
-    status = allocBuf( & frame);
+    status = allocBuf(frame);
 
     // check for error, if error return error
-    if(status != OK){
+    if (status != OK)
+    {
         return status;
     }
 
     // insert allocated page into hash table at allocated frame
-    status = ( hashTable->insert(file, pageNo, &frame) );
+    status = hashTable->insert(file, pageNo, frame);
 
     // check for error, if error return error
-    if(status != OK){
+    if (status != OK)
+    {
         return status;
     }
 
@@ -212,7 +213,6 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     tmpbuf->Set(file, *pageNo);
 
     return status;
-
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo)
