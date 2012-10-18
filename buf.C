@@ -126,6 +126,7 @@ const Status BufMgr::allocBuf(int & frame)
 
                     }// end dirty bit check
                     
+		    bufTable[clockHand].Set(
                     // useable frame found set frameFound
                     foundFrame = true;
                     
@@ -134,7 +135,7 @@ const Status BufMgr::allocBuf(int & frame)
             }// end refbit check
             else{
                 // clear refbit
-                bufTable[clockHand].refbit = true;
+                bufTable[clockHand].refbit = false;
             }
         
         }// end else (valid == true)
@@ -300,7 +301,7 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     // set file correctly
     //bufTable->Set(file, *pageNo);
     BufDesc* tmpbuf = &(bufTable[frame]);
-    tmpbuf->Set(file, *pageNo);
+    tmpbuf->Set(file, pageNo);
 
     return status;
 }
