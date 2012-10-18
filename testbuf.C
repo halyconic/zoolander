@@ -7,7 +7,6 @@
 #include "page.h"
 #include "buf.h"
 
-
 #define CALL(c)    { Status s; \
                      if ((s = c) != OK) { \
 		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
@@ -99,6 +98,7 @@ int main()
       sprintf((char*)page, "test.1 Page %d %7.1f", j[i], (float)j[i]);
       CALL(bufMgr->unPinPage(file1, j[i], true));
     }
+
     cout <<"Test passed"<<endl<<endl;
 
     cout << "Reading pages back..." << endl;
@@ -108,6 +108,7 @@ int main()
       ASSERT(memcmp(page, &cmp, strlen((char*)&cmp)) == 0);
       CALL(bufMgr->unPinPage(file1, j[i], false));
     }
+
     cout<< "Test passed"<<endl<<endl;
 
    
@@ -116,24 +117,57 @@ int main()
     cout << "The output will consist of the file name, page number, and a value."<<endl;
     cout << "The page number and the value should match."<<endl<<endl;
 
+#ifdef USDEBUGBUF
+    cout << "3a";
+    bufMgr->toString();
+#endif USDEBUGBUF
+
     for (i = 0; i < num/3; i++) 
     {
+#ifdef USDEBUGBUF
+      cout << "3b";
+    bufMgr->toString();
+#endif USDEBUGBUF
       CALL(bufMgr->allocPage(file2, pageno2, page2));
+#ifdef USDEBUGBUF
+      cout << "3c";
+    bufMgr->toString();
+#endif USDEBUGBUF
       sprintf((char*)page2, "test.2 Page %d %7.1f", pageno2, (float)pageno2);
       CALL(bufMgr->allocPage(file3, pageno3, page3));
+#ifdef USDEBUGBUF
+      cout << "3d";
+    bufMgr->toString();
+#endif USDEBUGBUF
       sprintf((char*)page3, "test.3 Page %d %7.1f", pageno3, (float)pageno3);
       pageno = j[random() % num];
       CALL(bufMgr->readPage(file1, pageno, page));
+#ifdef USDEBUGBUF
+      cout << "3e";
+    bufMgr->toString();
+#endif USDEBUGBUF
       sprintf((char*)&cmp, "test.1 Page %d %7.1f", pageno, (float)pageno);
       ASSERT(memcmp(page, &cmp, strlen((char*)&cmp)) == 0);
       cout << (char*)page << endl;
       CALL(bufMgr->readPage(file2, pageno2, page2));
+#ifdef USDEBUGBUF
+      cout << "3f";
+    bufMgr->toString();
+#endif USDEBUGBUF
       sprintf((char*)&cmp, "test.2 Page %d %7.1f", pageno2, (float)pageno2);
       ASSERT(memcmp(page2, &cmp, strlen((char*)&cmp)) == 0);
       CALL(bufMgr->readPage(file3, pageno3, page3));
+#ifdef USDEBUGBUF
+      cout << "3g";
+    bufMgr->toString();
+#endif USDEBUGBUF
       sprintf((char*)&cmp, "test.3 Page %d %7.1f", pageno3, (float)pageno3);
       ASSERT(memcmp(page3, &cmp, strlen((char*)&cmp)) == 0);
       CALL(bufMgr->unPinPage(file1, pageno, true));
+#ifdef USDEBUGBUF
+      cout << "3h";
+    bufMgr->toString();
+#endif USDEBUGBUF
     }
 
     for (i = 0; i < num/3; i++) {
