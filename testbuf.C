@@ -97,6 +97,7 @@ int main()
     for (i = 0; i < num; i++) {
       CALL(bufMgr->allocPage(file1, j[i], page));
       sprintf((char*)page, "test.1 Page %d %7.1f", j[i], (float)j[i]);
+      //cout << (char*)page << endl;
       CALL(bufMgr->unPinPage(file1, j[i], true));
     }
     cout <<"Test passed"<<endl<<endl;
@@ -105,11 +106,13 @@ int main()
     for (i = 0; i < num; i++) {
       CALL(bufMgr->readPage(file1, j[i], page));
       sprintf((char*)&cmp, "test.1 Page %d %7.1f", j[i], (float)j[i]);
+      //cout << (char*)page << endl;
       ASSERT(memcmp(page, &cmp, strlen((char*)&cmp)) == 0);
       CALL(bufMgr->unPinPage(file1, j[i], false));
     }
     cout<< "Test passed"<<endl<<endl;
 
+    //CALL(bufMgr->allocPage(file2, pageno2, page2));
    
     cout << "Writing and reading back multiple files..." << endl;
     cout << "Expected Result: ";
