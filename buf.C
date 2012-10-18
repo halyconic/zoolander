@@ -8,6 +8,8 @@
 #include "page.h"
 #include "buf.h"
 
+#include <assert.h>
+
 #define ASSERT(c)  { if (!(c)) { \
 		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
                        cerr << "This condition should hold: " #c << endl; \
@@ -254,7 +256,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         {
             return s;
         }
-        s = file->readPage(PageNo, page);
+        s = file->readPage(PageNo, &(bufPool[frameNo]));
         if(s != OK)
         {
             return s;
@@ -272,6 +274,8 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 
         //return frame pointer
         page = &(bufPool[frameNo]);
+
+        assert (frameNo >= 0 && frameNo < 100);
     }
     else
     {
@@ -283,6 +287,8 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 
         //return frame pointer
         page = &(bufPool[frameNo]);
+
+        assert (frameNo >= 0 && frameNo < 100);
     }
 	return OK;
 }
