@@ -43,6 +43,9 @@ const Status destroyHeapFile(const string fileName)
 // constructor opens the underlying file
 HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 {
+	/*
+	 * Preliminary code - probably wrong
+	 */
     Status 	status;
     Page*	pagePtr;
 
@@ -51,17 +54,24 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     // open the file and read in the header page and the first data page
     if ((status = db.openFile(fileName, filePtr)) == OK)
     {
+    	// TODO: Should not be passing curPageNo in here
+    	// reads and pins the header page for the file in the buffer pool
+		status = bufMgr->readPage(filePtr, curPageNo, pagePtr);
 		
+		// initialize the private data members headerPage, headerPageNo, and hdrDirtyFlag
+		headerPage = pagePtr->curPage;
+		headerPageNo = filePtr->getFirstPage(curPageNo);
+		hdrDirtyFlag = true;
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+		// TODO: This can't be right
+		// read and pin the first page of the file into the buffer pool
+		status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
+
+		// initialize curPage, curPageNo, curDirtyFlag, and curRec appropriately
+		curPage = headerPage;
+		curPageNo = headerPageNo;
+		curDirtyFlag = hdrDirtyFlag;
+		curRec = NULLRID;
     }
     else
     {
