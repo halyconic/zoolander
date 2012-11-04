@@ -1,0 +1,31 @@
+!SESSION 2012-10-14 17:59:42.215 -----------------------------------------------
+eclipse.buildId=M20120208-0800
+java.version=1.6.0_24
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product
+Command-line arguments:  -os linux -ws gtk -arch x86 -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -product org.eclipse.epp.package.cpp.product -data /home/stephen/Code/CS564 -product org.eclipse.epp.package.cpp.product
+
+!ENTRY org.eclipse.core.resources 4 77 2012-10-14 18:00:27.490
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2012-10-14 18:00:27.490
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2012-10-14 18:00:27.490
+!MESSAGE /home/stephen/Code/CS564 overlaps the workspace location: /home/stephen/Code/CS564
+
+!ENTRY org.eclipse.core.resources 4 77 2012-10-14 18:01:11.919
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2012-10-14 18:01:11.919
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2012-10-14 18:01:11.919
+!MESSAGE /home/stephen/Code/CS564 overlaps the workspace location: /home/stephen/Code/CS564
+!SESSION 2012-10-14 18:01:42.430 -----------------------------------------------
+eclipse.buildId=M20120208-0800
+java.version=1.6.0_24
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.cpp.product
+Command-line arguments:  -os linux -ws gtk -arch x86 -product org.eclipse.epp.package.cpp.product
+
+!ENTRY org.eclipse.cdt.core 1 0 2012-10-14 18:02:32.156
+!MESSAGE Indexed 'CS564' (0 sources, 98 headers) in 3.14 sec: 2,293 declarations; 2,514 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0.00%)
