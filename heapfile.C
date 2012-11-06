@@ -353,7 +353,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
             status = bufMgr->readPage(filePtr, nextPageNo, curPage);
             if (status != OK)
             {
-                cerr << "error in reading in page";
+                cerr << "error in reading in next page";
                 return status;
             }
 
@@ -418,7 +418,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
             status = bufMgr->readPage(filePtr, nextPageNo, curPage);
             if (status != OK)
             {
-                cerr << "error in reading in page";
+                cerr << "error in reading in next page";
                 return status;
             }
 
@@ -466,6 +466,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
 		}
     	bufMgr->readPage(filePtr, nextPageNo, curPage);
     }*/
+    return OK;
 }
 
 
