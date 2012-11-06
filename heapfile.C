@@ -101,6 +101,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 		// initialize curPage, curPageNo, curDirtyFlag, and curRec appropriately
 		curDirtyFlag = false;
 		curRec = NULLRID;
+		returnStatus = OK;
     }
     else
     {
@@ -571,7 +572,7 @@ InsertFileScan::~InsertFileScan()
         status = bufMgr->unPinPage(filePtr, curPageNo, true);
         curPage = NULL;
         curPageNo = 0;
-        if (status != OK) cerr << "error in unpin of data page\n";
+        if (status != OK && status != PAGENOTPINNED) cerr << "error in unpin of data page\n";
     }
 }
 
@@ -619,6 +620,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             iterPage->insertRecord(rec,rid);
             outRid = rid;
             foundOpenPage = true;
+
+            headerPage->recCnt++;
+            hdrDirtyFlag = true;
 
             // implict: curPage = iterPage;
             // implict: curPageNo = iterPage->curPage;
@@ -675,6 +679,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
                 // Set link list correctly
                 curPage->setNextPage(newPageNo);
+                curDirtyFlag = true;
 
                 //unpin prev page
             	unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
@@ -687,6 +692,12 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
                 curPage = newPage;
                 curPageNo = newPageNo;
                 curDirtyFlag = true;
+
+                headerPage->lastPage = curPageNo;
+                headerPage->pageCnt++;
+                headerPage->recCnt++;
+                hdrDirtyFlag = true;
+
                 unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
                 if (unpinstatus != OK && unpinstatus != PAGENOTPINNED)
                 {
