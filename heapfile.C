@@ -54,23 +54,26 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     // open the file and read in the header page and the first data page
     if ((status = db.openFile(fileName, filePtr)) == OK)
     {
-    	// TODO: Should not be passing curPageNo in here
-    	// reads and pins the header page for the file in the buffer pool
-		status = bufMgr->readPage(filePtr, curPageNo, pagePtr);
-
-		// initialize the private data members headerPage, headerPageNo, and hdrDirtyFlag
-		headerPage = pagePtr->curPage;
-		headerPageNo = filePtr->getFirstPage(curPageNo);
-		hdrDirtyFlag = true;
-
-		// TODO: This can't be right
-		// read and pin the first page of the file into the buffer pool
+    	// initialize the private data members headerPage, headerPageNo, and hdrDirtyFlag
+    	status = filePtr->getFirstPage(headerPageNo);
+        if (status != OK)
+        {
+            cerr << "error in getting header page number";
+        }
 		status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
+        if (status != OK)
+        {
+            cerr << "error in reading header page";
+        }
+		headerPage = pagePtr;
+		hdrDirtyFlag = false;
+
+		// read and pin the first page of the file into the buffer pool
+		curPageNo = headerPage->firstPage;
+		status = bufMgr->readPage(filePtr, curPageNo, curPage);
 
 		// initialize curPage, curPageNo, curDirtyFlag, and curRec appropriately
-		curPage = headerPage;
-		curPageNo = headerPageNo;
-		curDirtyFlag = hdrDirtyFlag;
+		curDirtyFlag = false;
 		curRec = NULLRID;
     }
     else
@@ -127,9 +130,6 @@ const int HeapFile::getRecCnt() const
 
 const Status HeapFile::getRecord(const RID & rid, Record & rec)
 {
-	/*
-	 * Preliminary code - probably wrong
-	 */
     Status status;
 
     // cout<< "getRecord. record (" << rid.pageNo << "." << rid.slotNo << ")" << endl;
@@ -141,13 +141,23 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
     }
     else
     {
-    	// unpin the currently pinned page (assuming a page is pinned)
+    	// unpin the currently pinned page (assumes a page is pinned)
     	status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-
-    	// TODO: check if nothing allocated
+        if(status != OK)
+        {
+            cerr << "error in unpinning page";
+            return status;
+        }
 
     	// use the pageNo field of the RID to read the page into the buffer pool
-    	status = bufMgr->readPage(filePtr, rid.pageNo, curDirtyFlag);
+    	status = bufMgr->readPage(filePtr, rid.pageNo, curPage);
+        if(status != OK)
+        {
+            cerr << "error in reading page";
+            return status;
+        }
+        curPageNo = rid.pageNo;
+        curPage->getRecord(rid, rec);
     }
 }
 
@@ -246,11 +256,8 @@ const Status HeapFileScan::scanNext(RID& outRid)
     int 	nextPageNo;
     Record      rec;
 
-    // TODO: check if curRec is NULL
     if (curPage == NULL)
-    {
-    	//return ERROR;
-    }
+    	return TROGDOR;
     nextPageNo = curPage->nextPage;
 
     // Set first record
@@ -267,18 +274,28 @@ const Status HeapFileScan::scanNext(RID& outRid)
     // Check all pages
     while (nextPageNo != -1)
     {
-    	while (tmpRid != NULLRID)
+    	while (status != ENDOFPAGE)
     	{
-    		// TODO: goto to slot
+//    		// TODO: goto to slot
+//    		int negSlotNo = -tmpRid.slotNo;
+//
+//    		slot_t RIDslot = curPage->slot[negSlotNo];
+//
+//    		rec.length = RIDslot.length;
+//    		rec.data = &curPage->data[RIDslot.offset];
 
     		// Get record
     		curPage->getRecord(tmpRid, rec);
 
     		if (matchRec(rec) == true)
-    			return status;
+    		{
+    			curRec = tmpRid;
+    			outRid = curRec;
+    			return OK;
+    		}
 
     		// Get next record
-    		tmpRid = curPage->nextRecord(tmpRid, tmpRid);
+    		status = curPage->nextRecord(tmpRid, tmpRid);
     	}
 
     	// Get next page
@@ -288,6 +305,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
             cerr << "error in getting next page";
             return status;
         }
+        bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
     	bufMgr->readPage(filePtr, nextPageNo, curPage);
     }
 }
