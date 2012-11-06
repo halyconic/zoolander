@@ -55,6 +55,12 @@ const Status createHeapFile(const string fileName)
         bufMgr->unPinPage(file, hdrPageNo, true);
         bufMgr->unPinPage(file, newPageNo, true);
 
+        status = db.closeFile(file);
+        if(status != OK)
+        {
+        	return status;
+        }
+
         return OK;
     }
     return (FILEEXISTS);
@@ -288,6 +294,10 @@ const Status HeapFileScan::scanNext(RID& outRid)
     if (curPage == NULL)
     {
         return TROGDOR;
+    }
+    if(headerPage->recCnt == 0)
+    {
+    	return FILEEOF;
     }
 
     // jump to the last record we returned (curRec)
