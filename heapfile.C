@@ -185,6 +185,7 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
         curPageNo = rid.pageNo;
         curPage->getRecord(rid, rec);
     }
+    return OK;
 }
 
 HeapFileScan::HeapFileScan(const string & name,
@@ -348,10 +349,16 @@ const Status HeapFileScan::scanNext(RID& outRid)
                 return status;
             }
 
-            // read in next page
-            bufMgr->readPage(filePtr, nextPageNo, curPage);
-    		curPage->firstRecord(tmpRid);
-            //update values
+            // read in next page check for errors
+            status = bufMgr->readPage(filePtr, nextPageNo, curPage);
+            if (status != OK)
+            {
+                cerr << "error in reading in page";
+                return status;
+            }
+
+            //update values	
+            curPage->firstRecord(tmpRid);
             curPageNo = nextPageNo;
             curDirtyFlag = false;
 
@@ -407,12 +414,19 @@ const Status HeapFileScan::scanNext(RID& outRid)
                 return status;
             }
 
-            // read in next page
-            bufMgr->readPage(filePtr, nextPageNo, curPage);
-    		curPage->firstRecord(tmpRid);
-            //update values
+            // read in next page check for errors
+            status = bufMgr->readPage(filePtr, nextPageNo, curPage);
+            if (status != OK)
+            {
+                cerr << "error in reading in page";
+                return status;
+            }
+
+            //update values	
+            curPage->firstRecord(tmpRid);
             curPageNo = nextPageNo;
             curDirtyFlag = false;
+
         }
     }
 
