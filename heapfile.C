@@ -466,6 +466,12 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             // implict: curPage = iterPage;
             // implict: curPageNo = iterPage->curPage;
             curDirtyFlag = true;
+
+            if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
+            {
+                cerr << "error in unpinning curPage\n";
+                return status;
+            }
         }
         // if not, move to next page and try again
         else
@@ -511,6 +517,12 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
                 curPage = newPage;
                 curPageNo = newPage->curPage;
                 curDirtyFlag = true;
+
+                if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
+                {
+                    cerr << "error in unpinning curPage\n";
+                    return status;
+                }
             }
         }
     }
