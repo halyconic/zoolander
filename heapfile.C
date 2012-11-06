@@ -246,16 +246,50 @@ const Status HeapFileScan::scanNext(RID& outRid)
     int 	nextPageNo;
     Record      rec;
 
+    // TODO: check if curRec is NULL
+    if (curPage == NULL)
+    {
+    	//return ERROR;
+    }
+    nextPageNo = curPage->nextPage;
 
+    // Set first record
+    if (curRec == NULLRID)
+    	status = curPage->firstRecord(tmpRid);
+    else
+    	status = curPage->nextRecord(curRec, tmpRid);
+    if (status != OK)
+    {
+        cerr << "error in getting next record";
+        return status;
+    }
 
+    // Check all pages
+    while (nextPageNo != -1)
+    {
+    	while (tmpRid != NULLRID)
+    	{
+    		// TODO: goto to slot
 
+    		// Get record
+    		curPage->getRecord(tmpRid, rec);
 
+    		if (matchRec(rec) == true)
+    			return status;
 
+    		// Get next record
+    		tmpRid = curPage->nextRecord(tmpRid, tmpRid);
+    	}
 
-
-
-
-
+    	// Get next page
+    	status = curPage->getNextPage(nextPageNo);
+        if(status != OK)
+        {
+            cerr << "error in getting next page";
+            return status;
+        }
+    	bufMgr->readPage(filePtr, nextPageNo, curPage);
+    }
 }
 
 
@@ -396,6 +430,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         return status;
     }
 
+    curPage = iterPage;
+    curPageNo = iterPage->curPage;
+    curDirtyFlag = false;
+
     // go through linked list, looking for enough space to insert record
     bool foundOpenPage = false;
     while(!foundOpenPage)
@@ -406,21 +444,25 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             iterPage->insertRecord(rec,rid);
             outRid = rid;
             foundOpenPage = true;
+
+            // implict: curPage = iterPage;
+            // implict: curPageNo = iterPage->curPage;
+            curDirtyFlag = true;
         }
         // if not, move to next page and try again
         else
         {
             //unpin current page
-            if(unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag) != OK)
+            if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
             {
                 cerr << "error in unpinning curPage\n";
                 return status;
             }
 
             //get next page into buffer
-            int nextPageNo = -1;
+            int nextPageNo;
             iterPage->getNextPage(nextPageNo);
-            if(nextPageNo > 0)
+            if (nextPageNo > 0)
             {
                 status = bufMgr->readPage(filePtr, nextPageNo, iterPage);
                 if(status != OK)
@@ -428,6 +470,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
                     cerr << "error in reading page into buffer";
                     return status;
                 }
+
+                curPage = iterPage;
+                curPageNo = iterPage->curPage;
+                curDirtyFlag = false;
             }
             else
             {
@@ -443,6 +489,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
                 newPage->init(newPageNo);
                 newPage->insertRecord(rec, rid);
                 outRid = rid;
+
+                curPage = newPage;
+                curPageNo = newPage->curPage;
+                curDirtyFlag = true;
             }
         }
     }
