@@ -2,7 +2,7 @@
 #include "error.h"
 
 // routine to create a heapfile
-const Status createHeapFile(const string fileName)
+const Status createHeapFile(const string & fileName)
 {
     File* 		file;
     Status 		status;
@@ -13,23 +13,49 @@ const Status createHeapFile(const string fileName)
 
     // try to open the file. This should return an error
     status = db.openFile(fileName, file);
-    if (status != OK)
-    {
-		// file doesn't exist. First create it and allocate
-		// an empty header page and data page.
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+    if (status != OK){
+
+        // create the file if error return the error
+        status = db.createFile(fileName);        
+        if(status != OK){
+            return status;
+        }
+        
+        // open the newly created file if error return error
+        status = db.openFile(fileName, file);
+        if(status != OK){
+            return status;
+        }
+
+        // allocate page in file for FileHdrPage and return errors
+        status = BufMgr.allocPage(file, hdrPageNo,newPage);
+        if(status != OK){
+            return status;
+        }
+        
+        // cast newly allocated page and initialize it as a FileHdrPage
+        // note: firstPage and lastPage to be allocated later
+        hdrPage = (FileHdrPage*) newPage;
+        hdrPage->fileName = fileName;
+        hdrPage->pageCnt = 1; //assuming header as 0 first data page as 1
+        hdrPage->recCnt = 0;
+
+        // allocate page in file as first data page and initialize as page
+        status = BufMgr.allocPage(file, newPageNo,newPage);
+        if(status != OK){
+            return status;
+        }
+        newPage->init(newPageNo);
+
+        // store first page as first and last page of file
+        hdrPage->firstPage = newPageNo;
+        hdrPage->lastPage = newPageNo;
+
+        // unpin both pages and set as dirty
+        BufMgr.unPinPage(file, hdrPageNo, true);
+        BufMGR.unPinPage(file, newPageNo, true);
+        
+        return OK;				
     }
     return (FILEEXISTS);
 }
