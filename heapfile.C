@@ -75,9 +75,6 @@ const Status destroyHeapFile(const string fileName)
 // constructor opens the underlying file
 HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 {
-	/*
-	 * Preliminary code - probably wrong
-	 */
     Status 	status;
     Page*	pagePtr;
 
@@ -440,43 +437,6 @@ const Status HeapFileScan::scanNext(RID& outRid)
 
         }
     }
-
-    /*
-
-    // Check all pages
-    while (nextPageNo != -1)
-    {
-    	while (status != ENDOFPAGE)
-    	{
-
-    		// Get record
-    		curPage->getRecord(tmpRid, rec);
-
-    		if (matchRec(rec) == true)
-    		{
-    			curRec = tmpRid;
-    			outRid = curRec;
-    			return OK;
-    		}
-
-    		// Get next record
-    		status = curPage->nextRecord(tmpRid, tmpRid);
-    	}
-
-    	// Get next page
-    	status = curPage->getNextPage(nextPageNo);
-        if(status != OK)
-        {
-            cerr << "error in getting next page";
-            return status;
-        }
-        bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-		if(nextPageNo == -1)
-		{
-			return TROGDOR;
-		}
-    	bufMgr->readPage(filePtr, nextPageNo, curPage);
-    }*/
     return OK;
 }
 
@@ -634,8 +594,6 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             headerPage->recCnt++;
             hdrDirtyFlag = true;
 
-            // implict: curPage = iterPage;
-            // implict: curPageNo = iterPage->curPage;
             curDirtyFlag = true;
 
             if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
