@@ -1,7 +1,23 @@
 #include "heapfile.h"
 #include "error.h"
 
-// routine to create a heapfile
+/*
+* Function: createHeapFile
+*
+* Dependancies: db.createFile(), db.createFile(), bufMgr.allocPage() 
+*
+* Input: const string fileName - the name of the file to be created
+*
+* Returns:  OK - if no error
+*           FILEEXISTS - if a file exists in the working directory 
+*                           with the same name as fileName
+*           Any other errors from dependant subfunctions
+*
+* Description: This function creates a heapfile with the given fileName(if it 
+*               already exists it throws an error). Then it initializes the file
+*               by creating the header page and an empty, but initialized data 
+*               page.
+*/
 const Status createHeapFile(const string fileName)
 {
     File* 		file;
@@ -60,19 +76,40 @@ const Status createHeapFile(const string fileName)
     return (FILEEXISTS);
 }
 
-// routine to destroy a heapfile
+/*
+* Function: destroyHeapFile
+*
+* Input: const string fileName - the name of the file to be destroyed
+*
+* Returns:  OK - if no errors
+*           FILEOPEN - if file is open
+*           BADFILE - if fileName doesn't exist
+* 
+* Description: Deletes the heap file from disk. The method requires that the
+*               file be closed before calling.
+*/
 const Status destroyHeapFile(const string fileName)
 {
 	return (db.destroyFile (fileName));
 }
 
-// constructor opens the underlying file
+/*
+* Function: HeapFile
+*
+* Input: const string& fileName - address of the name of the file to be opened *                                    as a heapFile
+*        Status& returnStatus - address for return status
+*
+* Returns:  no returns but returnStatus is set to the following prior to 
+*          completing the method:
+*            OK - if no error
+*            ANY IO or Unix errors associated with opening files
+*
+* Description: Opens the given file as a heap file. If an error occurs it gets
+*                set in the returnStatus variable.
+*/
 HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 {
-	/*
-	 * Preliminary code - probably wrong
-	 */
-    Status 	status;
+	Status 	status;
     Page*	pagePtr;
 
     cout << "opening file " << fileName << endl;
@@ -111,7 +148,12 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     }
 }
 
-// the destructor closes the file
+/*
+* Function ~HeapFile()
+*
+* Description: Closes the heap file. Unpinning any pinned pages and writing the
+*               dirty pages page to disk.
+*/
 HeapFile::~HeapFile()
 {
     Status status;
@@ -143,18 +185,31 @@ HeapFile::~HeapFile()
     }
 }
 
-// Return number of records in heap file
-
+/*
+* Function:getRecCnt();
+*
+* Return: int - the number of records in the file
+*
+*/
 const int HeapFile::getRecCnt() const
 {
   return headerPage->recCnt;
 }
 
-// retrieve an arbitrary record from a file.
-// if record is not on the currently pinned page, the current page
-// is unpinned and the required page is read into the buffer pool
-// and pinned.  returns a pointer to the record via the rec parameter
-
+/*
+* Function: getRecord()
+*
+* Inputs: const RID & rid - RID of record to be return.
+*         Record & rec - place holder to catch the returned record
+*
+* Output: OK - if no error and record in &rec variable
+*         Any errors encountered attempting to get to the record.
+*
+* Description: Retrieve an arbitrary record from a file. If record is not on 
+*                the currently pinned page, the current page is unpinned and 
+*                the required page is read into the buffer pool and pinned.
+*                Returns a pointer to the record via the rec parameter
+*/
 const Status HeapFile::getRecord(const RID & rid, Record & rec)
 {
     Status status;
@@ -189,11 +244,13 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
     return OK;
 }
 
+
 HeapFileScan::HeapFileScan(const string & name,
 			   Status & status) : HeapFile(name, status)
 {
     filter = NULL;
 }
+
 
 const Status HeapFileScan::startScan(const int offset_,
 				     const int length_,
@@ -224,7 +281,16 @@ const Status HeapFileScan::startScan(const int offset_,
     return OK;
 }
 
-
+/*
+* Function: endScan()
+*
+* Output: OK - if no error
+*         Any errors encountered during scanning
+*
+* Description: This method terminates a scan over a file but does not delete the
+*               scan object.  This will allow the scan object to be reused for
+*               another scan. 
+*/
 const Status HeapFileScan::endScan()
 {
     Status status;
@@ -245,6 +311,16 @@ HeapFileScan::~HeapFileScan()
     endScan();
 }
 
+/*
+* Function: markScan()
+*
+* Output: OK - if no error
+*         Any errors encountered during the save of the scan
+*
+* Description: Saves the current position of the scan by preserving the values
+*               of curPageNo and curRec in the private data members markedPageNo
+*               and markedRec, respectively. 
+*/
 const Status HeapFileScan::markScan()
 {
     // make a snapshot of the state of the scan
@@ -253,6 +329,20 @@ const Status HeapFileScan::markScan()
     return OK;
 }
 
+/*
+* Function: resetScan()
+*
+* Output: OK - if no error
+*         Any errors encountered during the reset of the scan
+*
+* Description: Resets the position of the scan to the position when the scan was
+*               last marked by restoring the values of curPageNo and curRec from
+*               markedPageNo and markedRec, respectively. Unless the page number
+*               of the currently pinned page is the same as the marked page
+*               number, unpin the currently pinned page, then read markedPageNo
+*               from disk and set curPageNo, curPage, curRec, and curDirtyFlag
+*               appropriately.
+*/
 const Status HeapFileScan::resetScan()
 {
     Status status;
@@ -275,7 +365,17 @@ const Status HeapFileScan::resetScan()
     return OK;
 }
 
-
+/*
+* Function: scanNext()
+*
+* Input: RID& outRid - return for the RID of next matching record
+*
+* Output: OK - if no error
+*         Any errors encountered during the scan
+*
+* Description:Returns (via the outRid parameter) the RID of the next record that
+*               satisfies the scan predicate.
+*/
 const Status HeapFileScan::scanNext(RID& outRid)
 {
     Status 	status = OK;
@@ -470,16 +570,35 @@ const Status HeapFileScan::scanNext(RID& outRid)
     return OK;
 }
 
-
-// returns pointer to the current record.  page is left pinned
-// and the scan logic is required to unpin the page
-
+/*
+* Function: getRecord()
+*
+* Input: Record& rec - return for the record of the RID stored in curRec
+*
+* Output: OK - if no error
+*         BADPAGENO - if page containing curRec is not pinned
+*         Any errors encountered during the 
+*
+* Description:Returns (via the outRid parameter) the RID of the next record that
+*               satisfies the scan predicate. Page is left pinned and the scan
+*               logic is required to unpin the page.
+*/
 const Status HeapFileScan::getRecord(Record & rec)
 {
     return curPage->getRecord(curRec, rec);
 }
 
-// delete record from file.
+/*
+* Function: deleteRecord()
+*
+* Output: OK - if no error
+*         BADPAGENO - if page containing curRec is not pinned
+*
+* Description: Deletes the record with RID whose rid is stored in curRec from
+*               the file. The record must be a record on the "current" page of
+*               the scan. Returns BADPAGENO if the page number of the record
+*               (i.e. curRec.pageNo) does not match curPageNo, otherwise OK. 
+*/
 const Status HeapFileScan::deleteRecord()
 {
     Status status;
@@ -495,7 +614,14 @@ const Status HeapFileScan::deleteRecord()
 }
 
 
-// mark current page of scan dirty
+/*
+* Function: markDirty()
+*
+* Output: OK - if no error
+*         Any error encountered in marking page dirty
+*
+* Description: Marks page as dirty. 
+*/
 const Status HeapFileScan::markDirty()
 {
     curDirtyFlag = true;
@@ -576,7 +702,18 @@ InsertFileScan::~InsertFileScan()
     }
 }
 
-// Insert a record into the file
+/*
+* Function: insertRecord()
+*
+* Inputs: const Record & rec - record to insert
+*         RID& outRid - RID to insert it at
+*
+* Output: OK - if no error
+*         Any error encountered in marking page dirty
+*
+* Description: Inserts the record described by rec into the file returning the 
+*               RID of the inserted record in outRid. 
+*/
 const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 {
     Page*	newPage;
