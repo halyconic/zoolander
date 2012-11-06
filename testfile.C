@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 
     int i,j;
     int num = 10120;
+
     Record dbrec1;
     RID*  ridArray;
 
@@ -48,6 +49,8 @@ int main(int argc, char **argv)
 
     // destroy any old copies of "dummy.02"
     status = destroyHeapFile("dummy.02");
+    status = destroyHeapFile("dummy.03");
+    status = destroyHeapFile("dummy.04");
     // ignore the error return
 
     status = createHeapFile("dummy.02");
