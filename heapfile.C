@@ -282,55 +282,147 @@ const Status HeapFileScan::scanNext(RID& outRid)
     int 	nextPageNo;
     Record      rec;
 
+    //weird error case
     if (curPage == NULL)
-    	return TROGDOR;
-    status = curPage->getNextPage(nextPageNo);
-    if (status != OK)
     {
-        cerr << "e";
-        return status;
+        return TROGDOR;
     }
 
-    // Set first record
-    if (curRec.pageNo == -1 && curRec.slotNo == -1)
-    	status = curPage->firstRecord(tmpRid);
-    else
-    	status = curPage->nextRecord(curRec, tmpRid);
-    if (status != OK)
+    // jump to the last record we returned (curRec)
+    // if no last returned record, we need to get first record from first page
+    if(curRec.pageNo == -1 && curRec.slotNo == -1)
     {
-    	if (status == ENDOFPAGE)
-    	{
-    		// read in next page
-    		status = curPage->getNextPage(nextPageNo);
+        // pin whatever is the current thing and read in the first page
+        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        if (status != OK && status != PAGENOTPINNED)
+        {
+            cerr << "error in unpinning curPage 4\n";
+            return status;
+        }
+        status = bufMgr->readPage(filePtr, headerPage->firstPage, curPage);
+        if (status != OK)
+        {
+            cerr << "error in reading in page";
+            return status;
+        }
+        //update values
+        curPageNo = headerPage->firstPage;
+        curDirtyFlag = false;
+        // get first record from first page
+        status = curPage->firstRecord(tmpRid);
+        if(status != OK)
+        {
+            cerr << "e1";
+            return status;
+        }
+    }
+    else
+    {
+        // jump to next record
+        status = curPage->nextRecord(curRec, tmpRid);
+        if(status != OK && status != ENDOFPAGE)
+        {
+            return status;
+        }
+        // uh-oh.  next record is on next page
+        if(status == ENDOFPAGE)
+        {
+            // find next page
+            status = curPage->getNextPage(nextPageNo);
     		if(status != OK)
     		{
     			cerr << "error in getting next page";
     			return status;
     		}
-    		bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+    		//uh-oh.  there is no next page
     		if(nextPageNo == -1)
     		{
-    			return TROGDOR;
+                return FILEEOF;
     		}
-    		bufMgr->readPage(filePtr, nextPageNo, curPage);
+
+            // unpin old page
+            status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+            if(status != OK)
+            {
+                cerr << "error in unpinning old page";
+                return status;
+            }
+
+            // read in next page
+            bufMgr->readPage(filePtr, nextPageNo, curPage);
     		curPage->firstRecord(tmpRid);
-    	}
-        cerr << "error in getting next record";
-        return status;
+            //update values
+            curPageNo = nextPageNo;
+            curDirtyFlag = false;
+
+        }
     }
+
+    // now move forward in the scan until something is found or end is reached
+    bool foundRetRec = false;
+    while(!foundRetRec)
+    {
+        //turn the rid into a record
+        status = curPage->getRecord(tmpRid, rec);
+        if(status != OK)
+        {
+            return status;
+        }
+
+        // check if it satisfies filter
+        if(matchRec(rec) == true)
+        {
+            foundRetRec = true;
+            curRec = tmpRid;
+            outRid = curRec;
+            return OK;
+        }
+
+        // if not, get next record
+        status = curPage->nextRecord(tmpRid, tmpRid);
+        if(status != OK && status != ENDOFPAGE)
+        {
+            return status;
+        }
+        if(status == ENDOFPAGE)
+        {
+            // find next page
+            status = curPage->getNextPage(nextPageNo);
+    		if(status != OK)
+    		{
+    			cerr << "error in getting next page";
+    			return status;
+    		}
+    		//uh-oh.  there is no next page
+    		if(nextPageNo == -1)
+    		{
+                return FILEEOF;
+    		}
+
+            // unpin old page
+            status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+            if(status != OK)
+            {
+                cerr << "error in unpinning old page";
+                return status;
+            }
+
+            // read in next page
+            bufMgr->readPage(filePtr, nextPageNo, curPage);
+    		curPage->firstRecord(tmpRid);
+            //update values
+            curPageNo = nextPageNo;
+            curDirtyFlag = false;
+        }
+    }
+
+    /*
 
     // Check all pages
     while (nextPageNo != -1)
     {
     	while (status != ENDOFPAGE)
     	{
-//    		// TODO: goto to slot
-//    		int negSlotNo = -tmpRid.slotNo;
-//
-//    		slot_t RIDslot = curPage->slot[negSlotNo];
-//
-//    		rec.length = RIDslot.length;
-//    		rec.data = &curPage->data[RIDslot.offset];
 
     		// Get record
     		curPage->getRecord(tmpRid, rec);
@@ -359,7 +451,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
 			return TROGDOR;
 		}
     	bufMgr->readPage(filePtr, nextPageNo, curPage);
-    }
+    }*/
 }
 
 
