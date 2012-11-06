@@ -677,5 +677,3 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     }
     return OK;
 }
-
-
