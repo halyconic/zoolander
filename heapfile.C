@@ -2,7 +2,7 @@
 #include "error.h"
 
 // routine to create a heapfile
-const Status createHeapFile(const string & fileName)
+const Status createHeapFile(const string fileName)
 {
     File* 		file;
     Status 		status;
@@ -298,6 +298,23 @@ const Status HeapFileScan::scanNext(RID& outRid)
     	status = curPage->nextRecord(curRec, tmpRid);
     if (status != OK)
     {
+    	if (status == ENDOFPAGE)
+    	{
+    		// read in next page
+    		status = curPage->getNextPage(nextPageNo);
+    		if(status != OK)
+    		{
+    			cerr << "error in getting next page";
+    			return status;
+    		}
+    		bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+    		if(nextPageNo == -1)
+    		{
+    			return TROGDOR;
+    		}
+    		bufMgr->readPage(filePtr, nextPageNo, curPage);
+    		curPage->firstRecord(tmpRid);
+    	}
         cerr << "error in getting next record";
         return status;
     }
@@ -337,6 +354,10 @@ const Status HeapFileScan::scanNext(RID& outRid)
             return status;
         }
         bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+		if(nextPageNo == -1)
+		{
+			return TROGDOR;
+		}
     	bufMgr->readPage(filePtr, nextPageNo, curPage);
     }
 }
@@ -463,17 +484,15 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         return INVALIDRECLEN;
     }
 
-
-
     //get first page into buffer
     unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-    if(unpinstatus != OK)
+    if (unpinstatus != OK && unpinstatus != PAGENOTPINNED)
     {
-        cerr << "error in unpinning curPage\n";
+        cerr << "error in unpinning curPage 4\n";
         return unpinstatus;
     }
     status = bufMgr->readPage(filePtr, headerPage->firstPage, iterPage);
-    if(status != OK)
+    if (status != OK)
     {
         cerr << "error in reading in page";
         return status;
@@ -500,25 +519,26 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
             if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
             {
-                cerr << "error in unpinning curPage\n";
+                cerr << "error in unpinning curPage 1\n";
                 return status;
             }
         }
         // if not, move to next page and try again
         else
         {
-            //unpin current page
-            if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
-            {
-                cerr << "error in unpinning curPage\n";
-                return status;
-            }
-
             //get next page into buffer
             int nextPageNo;
             iterPage->getNextPage(nextPageNo);
             if (nextPageNo > 0)
             {
+                //unpin current page
+            	unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                if (unpinstatus != OK && unpinstatus != PAGENOTPINNED)
+                {
+                    cerr << "error in unpinning curPage 2\n";
+                    return status;
+                }
+
                 status = bufMgr->readPage(filePtr, nextPageNo, iterPage);
                 if(status != OK)
                 {
@@ -541,17 +561,29 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
                     cerr << "error in allocating new page";
                     return status;
                 }
+                bufMgr->readPage(filePtr, newPageNo, newPage);
                 newPage->init(newPageNo);
                 newPage->insertRecord(rec, rid);
                 outRid = rid;
 
-                curPage = newPage;
-                curPageNo = nextPageNo;
-                curDirtyFlag = true;
+                // Set link list correctly
+                curPage->setNextPage(newPageNo);
 
-                if((unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag)) != OK)
+                //unpin prev page
+            	unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                if (unpinstatus != OK && unpinstatus != PAGENOTPINNED)
                 {
-                    cerr << "error in unpinning curPage\n";
+                    cerr << "error in unpinning prev page\n";
+                    return status;
+                }
+
+                curPage = newPage;
+                curPageNo = newPageNo;
+                curDirtyFlag = true;
+                unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                if (unpinstatus != OK && unpinstatus != PAGENOTPINNED)
+                {
+                    cerr << "error in unpinning curPage 3\n";
                     return status;
                 }
             }
