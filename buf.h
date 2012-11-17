@@ -1,8 +1,6 @@
 #ifndef BUF_H
 #define BUF_H
 
-#define USDEBUGBUF 0
-
 #include "db.h"
 // define if debug output wanted
 //#define DEBUGBUF
@@ -129,9 +127,6 @@ public:
   const Status flushFile(const File* file); // writing out all dirty pages of the file
   const Status disposePage(File* file, const int PageNo); // dispose of page in file
   void  printSelf();
-
-  // USDEBUGBUF
-  void  toString();
 
   const BufStats & getBufStats() const // get buffer pool usage
   {

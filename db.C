@@ -183,7 +183,7 @@ const Status File::destroy(const string & fileName)
 {
   if (remove(fileName.c_str()) < 0)
   {
-    cout << "db.destroy. unlink returned error" << "\n";
+    // cout << "db.destroy. unlink returned error" << "\n";
     return UNIXERR;
   }
 

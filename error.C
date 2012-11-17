@@ -1,9 +1,12 @@
 #include <sys/types.h>
 #include <functional>
 #include <iostream>
-using namespace std;
-#include "error.h"
 #include "stdio.h"
+
+using namespace std;
+
+#include "error.h"
+
 void Error::print(Status status)
 {
   cerr << "Error: ";
