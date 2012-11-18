@@ -32,6 +32,7 @@ const Status RelCatalog::createRel(const string & relation,
         return status;
     }
     //set up all AttrDescs and add them to attrcat
+    int offset = 0;
     for(int i = 0; i < attrCnt; i++)
     {
         attrInfo ai = attrList[i];
@@ -40,9 +41,8 @@ const Status RelCatalog::createRel(const string & relation,
         strcpy(ad.attrName, ai.attrName);
         ad.attrLen = ai.attrLen;
         ad.attrType = ai.attrType;
-        /*int intAttrValue = (int)ai.attrValue;
-        int intAttrCat = (int)attrCat;
-        ad.attrOffset = intAttrValue - intAttrCat;*/
+        ad.attrOffset = offset;
+        offset += ad.attrLen;
         attrCat->addInfo(ad);
     }
     //create a HeapFile instance to hold tuples of the relation
