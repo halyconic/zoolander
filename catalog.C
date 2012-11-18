@@ -64,7 +64,6 @@ const Status AttrCatalog::getInfo(const string & relation,
 				  const string & attrName,
 				  AttrDesc &record)
 {
-
   Status status;
   RID rid;
   Record rec;
@@ -72,9 +71,28 @@ const Status AttrCatalog::getInfo(const string & relation,
 
   if (relation.empty() || attrName.empty()) return BADCATPARM;
 
+  /*
+   * Remove headers
+   */
+//  #include <stdlib.h>
+  HeapFileScan scan = HeapFileScan(relation, status);
+
+  status = scan.startScan(0, 0, INTEGER, NULL, LTE); // Return all records
+
+  while (scan.scanNext(rid) != FILEEOF)
+  {
+	  status = scan.getRecord(rec);
+  }
+
+  // Get record from rid
+  status = getRecord(rid, rec);
 
 
 
+
+
+
+  return OK;
 }
 
 
