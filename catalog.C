@@ -16,10 +16,20 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
   Status status;
   Record rec;
   RID rid;
+  HeapFileScan* hfs;
 
+  hfs = new HeapFileScan(RELCATNAME, status);
+  if(status != OK)  return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING,relChars, EQ);
+  if(status != OK)  return status;
+  status = hfs->scanNext(rid);
+  if(status != OK)  return status;
+  status = hfs->getRecord(rec);
+  if(status != OK)  return status;
+  memcpy(&record,&rec,rec.length);
 
-
-
+  return OK;
 }
 
 
@@ -29,9 +39,21 @@ const Status RelCatalog::addInfo(RelDesc & record)
   InsertFileScan*  ifs;
   Status status;
 
-
-
-
+  ifs = new InsertFileScan(RELCATNAME, status);
+  if(status != OK)
+  {
+      return status;
+  }
+  Record rec;
+  rec.data = (void*)&record;
+  rec.length = sizeof(RelDesc);
+  status = ifs->insertRecord(rec, rid);
+  if(status != OK)
+  {
+      return status;
+  }
+  delete ifs;
+  return OK;
 }
 
 const Status RelCatalog::removeInfo(const string & relation)
@@ -42,8 +64,17 @@ const Status RelCatalog::removeInfo(const string & relation)
 
   if (relation.empty()) return BADCATPARM;
 
+  hfs = new HeapFileScan(RELCATNAME,status);
+  if(status != OK)  return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if(status != OK)  return status;
+  status = hfs->scanNext(rid);
+  if(status != OK)  return status;
+  status = hfs->deleteRecord();
+  if(status != OK)  return status;
 
-
+  return OK;
 }
 
 
@@ -60,7 +91,7 @@ AttrCatalog::AttrCatalog(Status &status) :
 }
 
 
-const Status AttrCatalog::getInfo(const string & relation, 
+const Status AttrCatalog::getInfo(const string & relation,
 				  const string & attrName,
 				  AttrDesc &record)
 {
@@ -91,7 +122,7 @@ const Status AttrCatalog::addInfo(AttrDesc & record)
 }
 
 
-const Status AttrCatalog::removeInfo(const string & relation, 
+const Status AttrCatalog::removeInfo(const string & relation,
 			       const string & attrName)
 {
   Status status;
@@ -105,7 +136,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
 }
 
 
-const Status AttrCatalog::getRelInfo(const string & relation, 
+const Status AttrCatalog::getRelInfo(const string & relation,
 				     int &attrCnt,
 				     AttrDesc *&attrs)
 {

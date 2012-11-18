@@ -15,15 +15,30 @@ const Status RelCatalog::destroyRel(const string & relation)
 {
   Status status;
 
-  if (relation.empty() || 
-      relation == string(RELCATNAME) || 
+  if (relation.empty() ||
+      relation == string(RELCATNAME) ||
       relation == string(ATTRCATNAME))
     return BADCATPARM;
 
+    // removes schema info from relcat and attrcat relations
+    status = removeInfo(relation);
+    if(status != OK)
+    {
+        return status;
+    }
+    status = attrCat->dropRelation(relation);
+    if(status != OK)
+    {
+        return status;
+    }
 
-
-
-
+    //destroys the heap file containing the tuples in the relation
+    status = destroyHeapFile(relation);
+    if(status != OK)
+    {
+        return status;
+    }
+    return OK;
 }
 
 
