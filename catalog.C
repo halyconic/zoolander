@@ -103,9 +103,18 @@ const Status AttrCatalog::getInfo(const string & relation,
 
   if (relation.empty() || attrName.empty()) return BADCATPARM;
 
+  hfs = new HeapFileScan(ATTRCATNAME, status);
+  if (status != OK)  return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if (status != OK)  return status;
+  status = hfs->scanNext(rid);
+  if (status != OK)  return status;
+  status = hfs->getRecord(rec);
+  if (status != OK)  return status;
+  memcpy(&record,&rec,rec.length);
 
-
-
+  return OK;
 }
 
 
@@ -115,10 +124,16 @@ const Status AttrCatalog::addInfo(AttrDesc & record)
   InsertFileScan*  ifs;
   Status status;
 
+  ifs = new InsertFileScan(RELCATNAME, status);
+  if (status != OK) return status;
+  Record rec;
+  rec.data = (void*)&record;
+  rec.length = sizeof(RelDesc);
+  status = ifs->insertRecord(rec, rid);
+  if (status != OK) return status;
+  delete ifs;
 
-
-
-
+  return OK;
 }
 
 
@@ -126,16 +141,29 @@ const Status AttrCatalog::removeInfo(const string & relation,
 			       const string & attrName)
 {
   Status status;
-  Record rec;
+  Record rec; // unused
   RID rid;
-  AttrDesc record;
+  AttrDesc record; // unused
   HeapFileScan*  hfs;
 
   if (relation.empty() || attrName.empty()) return BADCATPARM;
 
+  // Two unused variables here - wrong?
+
+  hfs = new HeapFileScan(ATTRCATNAME, status);
+  if (status != OK) return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if (status != OK) return status;
+  status = hfs->scanNext(rid);
+  if (status != OK) return status;
+  status = hfs->deleteRecord();
+  if (status != OK) return status;
+
+  return OK;
 }
 
-
+#include <vector>
 const Status AttrCatalog::getRelInfo(const string & relation,
 				     int &attrCnt,
 				     AttrDesc *&attrs)
@@ -147,9 +175,30 @@ const Status AttrCatalog::getRelInfo(const string & relation,
 
   if (relation.empty()) return BADCATPARM;
 
+  hfs = new HeapFileScan(ATTRCATNAME, status);
+  if (status != OK) return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if (status != OK) return status;
 
+  // std::vector guarantees contiguous storage, can recast
+  std::vector<AttrDesc>* attrs_vector = new std::vector<AttrDesc>();
+  attrs = &((*attrs_vector)[0]);
 
+  attrCnt = 0;
+  while (hfs->scanNext(rid) != FILEEOF)
+  {
+    status = hfs->scanNext(rid);
+	if (status != OK)  return status;
+	status = hfs->getRecord(rec);
+	if (status != OK)  return status;
+	++attrCnt;
+	AttrDesc desc;
+	memcpy(&desc,&rec,rec.length);
+	attrs_vector->push_back(desc);
+  }
 
+  return OK;
 }
 
 
