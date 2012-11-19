@@ -47,8 +47,6 @@ const Status UT_Load(const string & relation, const string & fileName)
   if (!iFile) return INSUFMEM;
   if (status != OK) return status;
 
-  // Somehow insert a bunch of records here
-
   free(attrs);
 
   /*
