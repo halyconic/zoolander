@@ -34,5 +34,38 @@ const Status RelCatalog::help(const string & relation)
 
   if (relation.empty()) return UT_Print(RELCATNAME);
 
-  return UT_Print(relation);
+  // make sure relation is actually a table
+  if ((status = relCat->getInfo(relation, rd)) != OK)
+    return status;
+
+  // get all of the relation's attributes
+  status = attrCat->getRelInfo(relation, attrCnt, attrs);
+  if(status != OK)
+    return status;
+
+  cout << "Relation name: " << relation << endl;
+  for(int i = 0; i < attrCnt; i++)
+  {
+    //print all the necessary info for each attribute
+    AttrDesc attr = attrs[i];
+    cout << "Attribute " << i << ": " << attr.attrName << endl;
+    switch(attr.attrType)
+    {
+        case INTEGER:
+            cout << "Type: int" << endl;
+            break;
+        case FLOAT:
+            cout << "Type: float" << endl;
+            break;
+        case STRING:
+            cout << "Type: string" << endl;
+            break;
+        default:
+            break;
+    }
+    cout << "Length: " << attr.attrLen << endl;
+    cout << "Offset: " << attr.attrOffset << endl;
+  }
+  free(attrs);
+  return OK;
 }

@@ -23,7 +23,8 @@ const Status RelCatalog::createRel(const string & relation,
     {
         return RELEXISTS;
     }
-    //set up RelDesc and add it to relcat
+    // add a tuple to the relcat relation
+    // set up RelDesc and add it to relcat
     strcpy(rd.relName, relation.c_str());
     rd.attrCnt = attrCnt;
     status = addInfo(rd);
@@ -43,7 +44,9 @@ const Status RelCatalog::createRel(const string & relation,
         ad.attrType = ai.attrType;
         ad.attrOffset = offset;
         offset += ad.attrLen;
-        attrCat->addInfo(ad);
+        status = attrCat->addInfo(ad);
+        if(status != OK)
+            return status;
     }
     //create a HeapFile instance to hold tuples of the relation
     status = createHeapFile(relation);
