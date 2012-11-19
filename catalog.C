@@ -18,17 +18,32 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
   RID rid;
   HeapFileScan* hfs;
 
+// Opens scan on relcat relation
   hfs = new HeapFileScan(RELCATNAME, status);
-  if(status != OK)  return status;
+  if(status != OK)
+    return status;
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING,relChars, EQ);
-  if(status != OK)  return status;
-  status = hfs->scanNext(rid);
-  if(status != OK)  return status;
-  status = hfs->getRecord(rec);
-  if(status != OK)  return status;
-  memcpy(&record,&rec,rec.length);
+  if(status != OK)
+    return status;
 
+    //get the desired tuple
+  status = hfs->scanNext(rid);
+  if(status == FILEEOF)
+  {
+      return RELNOTFOUND;
+  }
+  else if(status != OK)
+  {
+    return status;
+  }
+  status = hfs->getRecord(rec);
+  if(status != OK)
+    return status;
+
+  //memcpy() the tuple out of the buffer pool into record
+  memcpy(&record,&rec,rec.length);
+  delete hfs;
   return OK;
 }
 
@@ -39,14 +54,18 @@ const Status RelCatalog::addInfo(RelDesc & record)
   InsertFileScan*  ifs;
   Status status;
 
+//create an InsertFileScan object on the relation catalog table
   ifs = new InsertFileScan(RELCATNAME, status);
   if(status != OK)
   {
       return status;
   }
+
+  // create a record
   Record rec;
   rec.data = (void*)&record;
   rec.length = sizeof(RelDesc);
+  //insert the record into the table
   status = ifs->insertRecord(rec, rid);
   if(status != OK)
   {
@@ -64,16 +83,29 @@ const Status RelCatalog::removeInfo(const string & relation)
 
   if (relation.empty()) return BADCATPARM;
 
+  //start a filter scan on relcat to locate the rid of the desired tuple
   hfs = new HeapFileScan(RELCATNAME,status);
-  if(status != OK)  return status;
+  if(status != OK)
+    return status;
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
-  if(status != OK)  return status;
+  if(status != OK)
+    return status;
   status = hfs->scanNext(rid);
-  if(status != OK)  return status;
+  if(status == FILEEOF)
+  {
+      return RELNOTFOUND;
+  }
+  else if(status != OK)
+  {
+      return status;
+  }
+  // remove the tuple
   status = hfs->deleteRecord();
-  if(status != OK)  return status;
+  if(status != OK)
+    return status;
 
+  delete hfs;
   return OK;
 }
 
@@ -113,6 +145,7 @@ const Status AttrCatalog::getInfo(const string & relation,
   status = hfs->getRecord(rec);
   if (status != OK)  return status;
   memcpy(&record,&rec,rec.length);
+  delete hfs;
 
   return OK;
 }
@@ -141,7 +174,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
 			       const string & attrName)
 {
   Status status;
-  Record rec; // unused
+  Record rec;
   RID rid;
   AttrDesc record; // unused
   HeapFileScan*  hfs;
@@ -150,7 +183,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
 
   // Two unused variables here - wrong?
 
-  hfs = new HeapFileScan(ATTRCATNAME, status);
+  /*hfs = new HeapFileScan(ATTRCATNAME, status);
   if (status != OK) return status;
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
@@ -158,7 +191,34 @@ const Status AttrCatalog::removeInfo(const string & relation,
   status = hfs->scanNext(rid);
   if (status != OK) return status;
   status = hfs->deleteRecord();
-  if (status != OK) return status;
+  if (status != OK) return status;*/
+
+  hfs = new HeapFileScan(ATTRCATNAME, status);
+  if(status != OK)
+    return status;
+  char* relChars = (char*)relation.c_str();
+  char* attrChars = (char*)attrName.c_str();
+
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if(status != OK)
+    return status;
+  while((status = hfs->scanNext(rid)) != FILEEOF)
+  {
+    if(status != OK)
+        return status;
+    status = hfs->getRecord(rec);
+    if(status != OK)
+        return status;
+    memcpy(&record, rec.data, rec.length);
+    if(strcmp(attrChars, record.attrName) == 0)
+    {
+        status = hfs->deleteRecord();
+        if(status != OK)
+            return status;
+        break;
+    }
+  }
+  delete hfs;
 
   return OK;
 }
