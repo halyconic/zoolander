@@ -145,6 +145,7 @@ const Status AttrCatalog::getInfo(const string & relation,
   status = hfs->getRecord(rec);
   if (status != OK)  return status;
   memcpy(&record,&rec,rec.length);
+  delete hfs;
 
   return OK;
 }
@@ -173,7 +174,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
 			       const string & attrName)
 {
   Status status;
-  Record rec; // unused
+  Record rec;
   RID rid;
   AttrDesc record; // unused
   HeapFileScan*  hfs;
@@ -182,7 +183,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
 
   // Two unused variables here - wrong?
 
-  hfs = new HeapFileScan(ATTRCATNAME, status);
+  /*hfs = new HeapFileScan(ATTRCATNAME, status);
   if (status != OK) return status;
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
@@ -190,7 +191,34 @@ const Status AttrCatalog::removeInfo(const string & relation,
   status = hfs->scanNext(rid);
   if (status != OK) return status;
   status = hfs->deleteRecord();
-  if (status != OK) return status;
+  if (status != OK) return status;*/
+
+  hfs = new HeapFileScan(ATTRCATNAME, status);
+  if(status != OK)
+    return status;
+  char* relChars = (char*)relation.c_str();
+  char* attrChars = (char*)attrName.c_str();
+
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if(status != OK)
+    return status;
+  while((status = hfs->scanNext(rid)) != FILEEOF)
+  {
+    if(status != OK)
+        return status;
+    status = hfs->getRecord(rec);
+    if(status != OK)
+        return status;
+    memcpy(&record, rec.data, rec.length);
+    if(strcmp(attrChars, record.attrName) == 0)
+    {
+        status = hfs->deleteRecord();
+        if(status != OK)
+            return status;
+        break;
+    }
+  }
+  delete hfs;
 
   return OK;
 }
@@ -229,7 +257,7 @@ const Status AttrCatalog::getRelInfo(const string & relation,
 	memcpy(&desc,&rec,rec.length);
 	attrs_vector->push_back(desc);
   }
-
+  delete hfs;
   return OK;
 }
 
