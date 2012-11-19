@@ -198,6 +198,8 @@ const Status AttrCatalog::getRelInfo(const string & relation,
 	attrs_vector->push_back(desc);
   }
 
+  delete hfs;
+
   return OK;
 }
 

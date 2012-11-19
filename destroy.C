@@ -41,7 +41,6 @@ const Status RelCatalog::destroyRel(const string & relation)
     return OK;
 }
 
-
 //
 // Drops a relation. It performs the following steps:
 //
@@ -56,14 +55,29 @@ const Status AttrCatalog::dropRelation(const string & relation)
 {
   Status status;
   AttrDesc *attrs;
-  int attrCnt, i;
+  int attrCnt, j;
 
   if (relation.empty()) return BADCATPARM;
 
+  status = getRelInfo(relation, attrCnt, attrs);
 
+  for (int i = 0; i < attrCnt; i++)
+  {
+	  HeapFileScan* hfs = new HeapFileScan(relation, status);
+	  if (status != OK) return status;
+	  status = hfs->startScan(0, sizeof(attrs[i].attrName), STRING, attrs[i].attrName, EQ);
+	  if (status != OK) return status;
 
+	  RID rid;
+	  status = hfs->scanNext(rid);
+	  if (status != OK) return status;
+	  status = hfs->deleteRecord();
+	  if (status != OK) return status;
 
+	  delete hfs;
+  }
 
+  delete attrs;
 }
 
 
