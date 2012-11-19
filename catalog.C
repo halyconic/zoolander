@@ -132,10 +132,37 @@ const Status AttrCatalog::getInfo(const string & relation,
   RID rid;
   Record rec;
   HeapFileScan*  hfs;
+  AttrDesc tempRecord;
 
   if (relation.empty() || attrName.empty()) return BADCATPARM;
 
   hfs = new HeapFileScan(ATTRCATNAME, status);
+  if(status != OK)
+    return status;
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if(status != OK)
+    return status;
+
+  while((status = hfs->scanNext(rid)) != FILEEOF)
+  {
+    if(status != OK)
+        return status;
+    status = hfs->getRecord(rec);
+    if(status != OK)
+        return status;
+    memcpy(&tempRecord, rec.data, rec.length);
+    if(strcmp(attrChars, record.attrName) == 0)
+    {
+        record = tempRecord;
+        delete hfs;
+        return OK;
+    }
+  }
+  return FILEEOF;
+
+
+  /*hfs = new HeapFileScan(ATTRCATNAME, status);
   if (status != OK)  return status;
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
@@ -145,7 +172,7 @@ const Status AttrCatalog::getInfo(const string & relation,
   status = hfs->getRecord(rec);
   if (status != OK)  return status;
   memcpy(&record,&rec,rec.length);
-  delete hfs;
+  delete hfs;*/
 
   return OK;
 }
@@ -215,12 +242,11 @@ const Status AttrCatalog::removeInfo(const string & relation,
         status = hfs->deleteRecord();
         if(status != OK)
             return status;
-        break;
+        delete hfs;
+        return OK;
     }
   }
-  delete hfs;
-
-  return OK;
+  return FILEEOF;
 }
 
 #include <vector>
