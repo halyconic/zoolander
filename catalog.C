@@ -42,7 +42,7 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
     return status;
 
   //memcpy() the tuple out of the buffer pool into record
-  memcpy(&record,&rec,rec.length);
+  memcpy(&record,rec.data,rec.length);
   delete hfs;
   return OK;
 }
@@ -266,24 +266,36 @@ const Status AttrCatalog::getRelInfo(const string & relation,
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
   if (status != OK) return status;
-
-  // std::vector guarantees contiguous storage, can recast
-  std::vector<AttrDesc>* attrs_vector = new std::vector<AttrDesc>();
-  attrs = &((*attrs_vector)[0]);
-
+  
   attrCnt = 0;
   while (hfs->scanNext(rid) != FILEEOF)
   {
-    //status = hfs->scanNext(rid);
-	if (status != OK)  return status;
+	if(status != OK)
+		return status;
 	status = hfs->getRecord(rec);
 	if (status != OK)  return status;
 	++attrCnt;
-	AttrDesc desc;
-	memcpy(&desc,&rec,rec.length);
-	attrs_vector->push_back(desc);
   }
-
+  if((status = hfs->endScan()) != OK)
+  {
+	  return status;
+  }
+  if((status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ)))
+  {
+	  return status;
+  }
+  attrs = new AttrDesc[attrCnt];
+  int i = 0;
+  while(hfs->scanNext(rid) != FILEEOF)
+  {
+	  status = hfs->getRecord(rec);
+	  if(status != OK)
+		  return status;
+	  AttrDesc desc;
+	  memcpy(&desc,rec.data,rec.length);
+	  attrs[i] = desc;
+	  i++;
+  }
   delete hfs;
 
   return OK;

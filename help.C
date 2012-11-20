@@ -65,6 +65,7 @@ const Status RelCatalog::help(const string & relation)
     }
     cout << "Length: " << attr.attrLen << endl;
     cout << "Offset: " << attr.attrOffset << endl;
+    cout << endl;
   }
   free(attrs);
   return OK;

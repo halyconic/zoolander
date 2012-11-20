@@ -39,9 +39,15 @@ const Status UT_Load(const string & relation, const string & fileName)
   if ((status = relCat->getInfo(relation, rd)) != OK) return status;
 
   // get attribute data
-  if ((status = attrCat->getRelInfo(rd.relName, attrCnt, attrs)) != OK)
+  if ((status = attrCat->getRelInfo(relation, attrCnt, attrs)) != OK)
     return status;
 
+  // find width
+  for(int i = 0; i < attrCnt; i++)
+  {
+	  width += attrs[i].attrLen;
+  }
+  //cout << width << endl;
   // start insertFileScan on relation
   iFile = new InsertFileScan(relation, status);
   if (!iFile) return INSUFMEM;
