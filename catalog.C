@@ -184,11 +184,11 @@ const Status AttrCatalog::addInfo(AttrDesc & record)
   InsertFileScan*  ifs;
   Status status;
 
-  ifs = new InsertFileScan(RELCATNAME, status);
+  ifs = new InsertFileScan(ATTRCATNAME, status);
   if (status != OK) return status;
   Record rec;
   rec.data = (void*)&record;
-  rec.length = sizeof(RelDesc);
+  rec.length = sizeof(AttrDesc);
   status = ifs->insertRecord(rec, rid);
   if (status != OK) return status;
   delete ifs;
@@ -274,7 +274,7 @@ const Status AttrCatalog::getRelInfo(const string & relation,
   attrCnt = 0;
   while (hfs->scanNext(rid) != FILEEOF)
   {
-    status = hfs->scanNext(rid);
+    //status = hfs->scanNext(rid);
 	if (status != OK)  return status;
 	status = hfs->getRecord(rec);
 	if (status != OK)  return status;
