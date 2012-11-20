@@ -17,6 +17,33 @@ const Status RelCatalog::createRel(const string & relation,
     {
         return NAMETOOLONG;
     }
+    int countAttrLen = 0;
+    for(int i = 0; i < attrCnt; i++)
+    {
+        countAttrLen += attrList[i].attrLen;
+    }
+    if(countAttrLen >= PAGESIZE)
+    {
+        return ATTRTOOLONG;
+    }
+    //make sure no duplicate attribute names
+    for(int i = 0; i < attrCnt; i++)
+    {
+        for(int j = 0; j < attrCnt; j++)
+        {
+            if(i != j)
+            {
+                attrInfo attrInfoI = attrList[i];
+                attrInfo attrInfoJ = attrList[j];
+                if(strcmp(attrInfoI.attrName, attrInfoJ.attrName) == 0)
+                {
+                    return DUPLATTR;
+                }
+            }
+        }
+    }
+
+
     // check if the passed relation string already exists as a relation
     status = getInfo(relation, rd);
     if(status == OK)
