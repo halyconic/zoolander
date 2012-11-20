@@ -127,7 +127,6 @@ const Status AttrCatalog::getInfo(const string & relation,
 				  const string & attrName,
 				  AttrDesc &record)
 {
-
   Status status;
   RID rid;
   Record rec;
@@ -146,13 +145,14 @@ const Status AttrCatalog::getInfo(const string & relation,
 
   while((status = hfs->scanNext(rid)) != FILEEOF)
   {
-    if(status != OK)
+    if (status != OK)
         return status;
     status = hfs->getRecord(rec);
-    if(status != OK)
+    if (status != OK)
         return status;
     memcpy(&tempRecord, rec.data, rec.length);
-    if(strcmp(attrChars, record.attrName) == 0)
+    char* attrChars = (char*)attrName.c_str();
+    if (strcmp(attrChars, record.attrName) == 0)
     {
         record = tempRecord;
         delete hfs;
