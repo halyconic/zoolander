@@ -114,7 +114,7 @@ const Status UT_Print(string relation)
   for(i = 0; i < attrCnt; i++) {
     for(int j = 0; j < attrWidth[i]; j++)
       putchar('-');
-    printf("    if (status != FILEEOF)");
+    printf("  ");
   }
   printf("\n");
 
