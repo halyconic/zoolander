@@ -1,6 +1,11 @@
 #include "catalog.h"
 
-
+/*
+ * Creates a new relation (table)
+ *
+ * Returns: OK if created correctly
+ *          Error status otherwise
+ */
 const Status RelCatalog::createRel(const string & relation,
 				   const int attrCnt,
 				   const attrInfo attrList[])
@@ -9,6 +14,7 @@ const Status RelCatalog::createRel(const string & relation,
     RelDesc rd;
     AttrDesc ad;
 
+    // THINGS THAT SHOULDN'T HAPPEN
     if (relation.empty() || attrCnt < 1)
     {
         return BADCATPARM;
@@ -17,6 +23,7 @@ const Status RelCatalog::createRel(const string & relation,
     {
         return NAMETOOLONG;
     }
+    //count up total size of relation's attributes
     int countAttrLen = 0;
     for(int i = 0; i < attrCnt; i++)
     {
@@ -43,13 +50,14 @@ const Status RelCatalog::createRel(const string & relation,
         }
     }
 
-
     // check if the passed relation string already exists as a relation
     status = getInfo(relation, rd);
     if(status == OK)
     {
         return RELEXISTS;
     }
+    // Passed all the disqualifications: now can create relation
+
     // add a tuple to the relcat relation
     // set up RelDesc and add it to relcat
     strcpy(rd.relName, relation.c_str());

@@ -46,7 +46,8 @@ const Status RelCatalog::help(const string & relation)
   cout << "Relation name: " << relation << endl;
   for(int i = 0; i < attrCnt; i++)
   {
-    //print all the necessary info for each attribute
+    //print all the required info for each attribute
+	// not as cosmetic as UT_PRINT, but it gets the point across
     AttrDesc attr = attrs[i];
     cout << "Attribute " << i << ": " << attr.attrName << endl;
     switch(attr.attrType)

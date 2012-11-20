@@ -43,11 +43,11 @@ const Status UT_Load(const string & relation, const string & fileName)
     return status;
 
   // find width
-  for(int i = 0; i < attrCnt; i++)
+  for(i = 0; i < attrCnt; i++)
   {
 	  width += attrs[i].attrLen;
   }
-  //cout << width << endl;
+
   // start insertFileScan on relation
   iFile = new InsertFileScan(relation, status);
   if (!iFile) return INSUFMEM;

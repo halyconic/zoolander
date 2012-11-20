@@ -65,11 +65,13 @@ const Status AttrCatalog::dropRelation(const string & relation)
   if(status != OK)
     return status;
 
+  // create scan to find all attributes belonging to the deleted relation
   HeapFileScan* hfs = new HeapFileScan(ATTRCATNAME, status);
   char* relChars = (char*)relation.c_str();
   status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
   if(status != OK)
     return status;
+  // for each, attribute found, delete it's record from the heapfile
   for(j = 0; j < attrCnt; j++)
   {
       RID rid;
@@ -83,24 +85,6 @@ const Status AttrCatalog::dropRelation(const string & relation)
   delete hfs;
   free(attrs);
   return OK;
-
-/*  for (int i = 0; i < attrCnt; i++)
-  {
-	  HeapFileScan* hfs = new HeapFileScan(relation, status);
-	  if (status != OK) return status;
-	  status = hfs->startScan(0, sizeof(attrs[i].attrName), STRING, attrs[i].attrName, EQ);
-	  if (status != OK) return status;
-
-	  RID rid;
-	  status = hfs->scanNext(rid);
-	  if (status != OK) return status;
-	  status = hfs->deleteRecord();
-	  if (status != OK) return status;
-
-	  delete hfs;
-  }
-
-  delete attrs;*/
 }
 
 
