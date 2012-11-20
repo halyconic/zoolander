@@ -274,7 +274,7 @@ const Status AttrCatalog::getRelInfo(const string & relation,
   attrCnt = 0;
   while (hfs->scanNext(rid) != FILEEOF)
   {
-    status = hfs->scanNext(rid);
+    //status = hfs->scanNext(rid);
 	if (status != OK)  return status;
 	status = hfs->getRecord(rec);
 	if (status != OK)  return status;
