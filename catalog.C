@@ -184,11 +184,11 @@ const Status AttrCatalog::addInfo(AttrDesc & record)
   InsertFileScan*  ifs;
   Status status;
 
-  ifs = new InsertFileScan(RELCATNAME, status);
+  ifs = new InsertFileScan(ATTRCATNAME, status);
   if (status != OK) return status;
   Record rec;
   rec.data = (void*)&record;
-  rec.length = sizeof(RelDesc);
+  rec.length = sizeof(AttrDesc);
   status = ifs->insertRecord(rec, rid);
   if (status != OK) return status;
   delete ifs;
