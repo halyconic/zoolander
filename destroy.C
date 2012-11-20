@@ -1,4 +1,6 @@
 #include "catalog.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 //
 // Destroys a relation. It performs the following steps:
@@ -60,8 +62,29 @@ const Status AttrCatalog::dropRelation(const string & relation)
   if (relation.empty()) return BADCATPARM;
 
   status = getRelInfo(relation, attrCnt, attrs);
+  if(status != OK)
+    return status;
 
-  for (int i = 0; i < attrCnt; i++)
+  HeapFileScan* hfs = new HeapFileScan(ATTRCATNAME, status);
+  char* relChars = (char*)relation.c_str();
+  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
+  if(status != OK)
+    return status;
+  for(j = 0; j < attrCnt; j++)
+  {
+      RID rid;
+      status = hfs->scanNext(rid);
+      if(status != OK)
+        return status;
+      status = hfs->deleteRecord();
+      if(status != OK)
+        return status;
+  }
+  delete hfs;
+  free(attrs);
+  return OK;
+
+/*  for (int i = 0; i < attrCnt; i++)
   {
 	  HeapFileScan* hfs = new HeapFileScan(relation, status);
 	  if (status != OK) return status;
@@ -77,7 +100,7 @@ const Status AttrCatalog::dropRelation(const string & relation)
 	  delete hfs;
   }
 
-  delete attrs;
+  delete attrs;*/
 }
 
 
