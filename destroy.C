@@ -1,6 +1,6 @@
 #include "catalog.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <string>
+#include <cstring>
 
 //
 // Destroys a relation. It performs the following steps:
@@ -17,31 +17,28 @@ const Status RelCatalog::destroyRel(const string & relation)
 {
   Status status;
 
-  if (relation.empty() ||
-      relation == string(RELCATNAME) ||
+  if (relation.empty() || 
+      relation == string(RELCATNAME) || 
       relation == string(ATTRCATNAME))
     return BADCATPARM;
 
-    // removes schema info from relcat and attrcat relations
-    status = removeInfo(relation);
-    if(status != OK)
-    {
-        return status;
-    }
-    status = attrCat->dropRelation(relation);
-    if(status != OK)
-    {
-        return status;
-    }
+  // delete attrcat entries
 
-    //destroys the heap file containing the tuples in the relation
-    status = destroyHeapFile(relation);
-    if(status != OK)
-    {
-        return status;
-    }
-    return OK;
+  if ((status = attrCat->dropRelation(relation)) != OK)
+    return status;
+
+  // delete entry from relcat
+
+  if ((status = removeInfo(relation)) != OK)
+    return status;
+
+  // destroy file
+  if ((status = destroyHeapFile(relation)) != OK)
+    return status;
+
+  return OK;
 }
+
 
 //
 // Drops a relation. It performs the following steps:
@@ -57,34 +54,27 @@ const Status AttrCatalog::dropRelation(const string & relation)
 {
   Status status;
   AttrDesc *attrs;
-  int attrCnt, j;
+  int attrCnt, i;
 
-  if (relation.empty()) return BADCATPARM;
+  if (relation.empty())
+    return BADCATPARM;
 
-  status = getRelInfo(relation, attrCnt, attrs);
-  if(status != OK)
+  // get attribute information
+
+  if ((status = getRelInfo(relation, attrCnt, attrs)) != OK)
     return status;
 
-  // create scan to find all attributes belonging to the deleted relation
-  HeapFileScan* hfs = new HeapFileScan(ATTRCATNAME, status);
-  char* relChars = (char*)relation.c_str();
-  status = hfs->startScan(0, sizeof(relChars), STRING, relChars, EQ);
-  if(status != OK)
-    return status;
-  // for each, attribute found, delete it's record from the heapfile
-  for(j = 0; j < attrCnt; j++)
-  {
-      RID rid;
-      status = hfs->scanNext(rid);
-      if(status != OK)
-        return status;
-      status = hfs->deleteRecord();
-      if(status != OK)
-        return status;
+  // remove entries from catalog
+
+  for(i = 0; i < attrCnt; i++) {
+    if ((status = removeInfo(relation, attrs[i].attrName)) != OK)
+      return status;
   }
-  delete hfs;
+
   free(attrs);
+
   return OK;
 }
+
 
 

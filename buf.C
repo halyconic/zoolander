@@ -60,6 +60,7 @@ BufMgr::~BufMgr() {
 
     delete [] bufTable;
     delete [] bufPool;
+    delete hashTable;
 }
 
 

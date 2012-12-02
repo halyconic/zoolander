@@ -3,7 +3,6 @@
 #include "y.tab.h"
 #include <string.h>
 #include  <stdio.h>
-#include "stdlib.h"
 
 //
 // total number of nodes available for a given parse-tree

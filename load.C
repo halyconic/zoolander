@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include "catalog.h"
 #include "utility.h"
-#include "heapfile.h"
+
 
 //
 // Loads a file of (binary) tuples from a standard file into the relation.
@@ -18,10 +18,8 @@ const Status UT_Load(const string & relation, const string & fileName)
   Status status;
   RelDesc rd;
   AttrDesc *attrs;
-  int attrCnt, i;
-  InsertFileScan * iFile;
-  int width = 0;
-  int records = 0;
+  int attrCnt;
+
   if (relation.empty() || fileName.empty() || relation == string(RELCATNAME)
       || relation == string(ATTRCATNAME))
     return BADCATPARM;
@@ -32,41 +30,38 @@ const Status UT_Load(const string & relation, const string & fileName)
   if ((fd = open(fileName.c_str(), O_RDONLY, 0)) < 0)
     return UNIXERR;
 
-  /*
-   * Start our code
-   */
   // get relation data
+
   if ((status = relCat->getInfo(relation, rd)) != OK) return status;
 
   // get attribute data
-  if ((status = attrCat->getRelInfo(relation, attrCnt, attrs)) != OK)
+  if ((status = attrCat->getRelInfo(rd.relName, attrCnt, attrs)) != OK)
     return status;
 
-  // find width
-  for(i = 0; i < attrCnt; i++)
-  {
-	  width += attrs[i].attrLen;
-  }
+  // open data file
 
-  // start insertFileScan on relation
-  iFile = new InsertFileScan(relation, status);
+  InsertFileScan* iFile = new InsertFileScan(rd.relName, status);
   if (!iFile) return INSUFMEM;
   if (status != OK) return status;
 
-  free(attrs);
+  int records = 0;
 
-  /*
-   * End our code
-   */
+  // compute width of tuple and open index files, if any
+  int width = 0;
+  int i;
 
-  // allocate buffer to hold record read from unix file
+  for(i = 0; i < attrCnt; i++) {
+    width += attrs[i].attrLen;
+  }
+
+  // create a record for constructing the tuple
+
   char *record;
   if (!(record = new char [width])) return INSUFMEM;
 
   int nbytes;
   Record rec;
 
-  // read next input record from Unix file and insert it into relation
   while((nbytes = read(fd, record, width)) == width) {
     RID rid;
     rec.data = record;
@@ -75,14 +70,15 @@ const Status UT_Load(const string & relation, const string & fileName)
     records++;
   }
 
-  // close heap file and unix file
+  cout << "Number of records inserted: " << records << endl;
+
+  // close heap file and data file
+
+  delete iFile;
   if (close(fd) < 0) return UNIXERR;
 
-  /*
-   * Start our code
-   */
-  delete iFile;
+  delete [] record;
+  free(attrs);
 
   return OK;
 }
-

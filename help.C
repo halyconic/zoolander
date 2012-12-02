@@ -32,42 +32,34 @@ const Status RelCatalog::help(const string & relation)
   AttrDesc *attrs;
   int attrCnt;
 
-  if (relation.empty()) return UT_Print(RELCATNAME);
+  if (relation.empty())
+    return UT_Print(RELCATNAME);
 
-  // make sure relation is actually a table
-  if ((status = relCat->getInfo(relation, rd)) != OK)
+  // get relation data
+
+  if ((status = getInfo(relation, rd)) != OK)
     return status;
 
-  // get all of the relation's attributes
-  status = attrCat->getRelInfo(relation, attrCnt, attrs);
-  if(status != OK)
+  // get attribute data
+
+  if ((status = attrCat->getRelInfo(relation, attrCnt, attrs)) != OK)
     return status;
 
-  cout << "Relation name: " << relation << endl;
-  for(int i = 0; i < attrCnt; i++)
-  {
-    //print all the required info for each attribute
-	// not as cosmetic as UT_PRINT, but it gets the point across
-    AttrDesc attr = attrs[i];
-    cout << "Attribute " << i << ": " << attr.attrName << endl;
-    switch(attr.attrType)
-    {
-        case INTEGER:
-            cout << "Type: int" << endl;
-            break;
-        case FLOAT:
-            cout << "Type: float" << endl;
-            break;
-        case STRING:
-            cout << "Type: string" << endl;
-            break;
-        default:
-            break;
-    }
-    cout << "Length: " << attr.attrLen << endl;
-    cout << "Offset: " << attr.attrOffset << endl;
-    cout << endl;
+  // print relation information
+
+  cout << "Relation name: " << rd.relName << " ("
+       << rd.attrCnt << " attributes)" << endl;
+
+  printf("%16.16s   Off   T   Len   I\n\n",  "Attribute name");
+  for(int i = 0; i < attrCnt; i++) {
+    Datatype t = (Datatype)attrs[i].attrType;
+    printf("%16.16s   %3d   %c   %3d\n", attrs[i].attrName,
+	   attrs[i].attrOffset,
+	   (t == INTEGER ? 'i' : (t == FLOAT ? 'f' : 's')),
+	   attrs[i].attrLen);
   }
+
   free(attrs);
+
   return OK;
 }

@@ -4,9 +4,9 @@
 //
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "heapfile.h"
 #include "parse.h"
-#include "stdio.h"
 
 extern "C" int isatty(int);
 extern int yylex();

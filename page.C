@@ -2,10 +2,9 @@
 #include <functional>
 #include <string>
 #include <iostream>
-#include "string.h"
 using namespace std;
-
 #include "page.h"
+#include "string.h"
 
 // page class constructor
 void Page::init(int pageNo)

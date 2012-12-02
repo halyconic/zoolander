@@ -139,7 +139,7 @@ if ( $#argv == 0 ) then
 	foreach queryfile ( `ls $TESTSDIR/qu.*` )
 		echo running test '#' $queryfile:e '****************'
 		$DBCREATE  $TESTDB
-		$MINIREL  $TESTDB < $queryfile
+		$MINIREL   $TESTDB < $queryfile
 		echo "y" | $DBDESTROY $TESTDB
 	end
 
@@ -152,7 +152,7 @@ else
 		if ( -r $TESTSDIR/qu.$testnum ) then
 			echo running test '#' $testnum '****************'
 			$DBCREATE  $TESTDB
-			$MINIREL  $TESTDB SM < $TESTSDIR/qu.$testnum
+			$MINIREL   $TESTDB < $TESTSDIR/qu.$testnum
 			echo "y" | $DBDESTROY $TESTDB
 		else
 			echo I can not find a test number $testnum.

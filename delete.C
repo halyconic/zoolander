@@ -16,9 +16,8 @@ const Status QU_Delete(const string & relation,
 		       const Datatype type, 
 		       const char *attrValue)
 {
-// part 4
+// part 6
 return OK;
-
 
 
 

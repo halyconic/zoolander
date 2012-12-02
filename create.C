@@ -1,94 +1,74 @@
 #include "catalog.h"
+#include <cstring>
 
-/*
- * Creates a new relation (table)
- *
- * Returns: OK if created correctly
- *          Error status otherwise
- */
-const Status RelCatalog::createRel(const string & relation,
+const Status RelCatalog::createRel(const string & relation, 
 				   const int attrCnt,
 				   const attrInfo attrList[])
 {
-    Status status;
-    RelDesc rd;
-    AttrDesc ad;
+  Status status;
+  RelDesc rd;
+  AttrDesc ad;
 
-    // THINGS THAT SHOULDN'T HAPPEN
-    if (relation.empty() || attrCnt < 1)
-    {
-        return BADCATPARM;
-    }
-    if (relation.length() >= sizeof rd.relName)
-    {
-        return NAMETOOLONG;
-    }
-    //count up total size of relation's attributes
-    int countAttrLen = 0;
-    for(int i = 0; i < attrCnt; i++)
-    {
-        countAttrLen += attrList[i].attrLen;
-    }
-    if(countAttrLen >= PAGESIZE)
-    {
-        return ATTRTOOLONG;
-    }
-    //make sure no duplicate attribute names
-    for(int i = 0; i < attrCnt; i++)
-    {
-        for(int j = 0; j < attrCnt; j++)
-        {
-            if(i != j)
-            {
-                attrInfo attrInfoI = attrList[i];
-                attrInfo attrInfoJ = attrList[j];
-                if(strcmp(attrInfoI.attrName, attrInfoJ.attrName) == 0)
-                {
-                    return DUPLATTR;
-                }
-            }
-        }
-    }
+  if (relation.empty() || attrCnt < 1)
+    return BADCATPARM;
 
-    // check if the passed relation string already exists as a relation
-    status = getInfo(relation, rd);
-    if(status == OK)
-    {
-        return RELEXISTS;
-    }
-    // Passed all the disqualifications: now can create relation
+  if (relation.length() >= sizeof rd.relName)
+    return NAMETOOLONG;
 
-    // add a tuple to the relcat relation
-    // set up RelDesc and add it to relcat
-    strcpy(rd.relName, relation.c_str());
-    rd.attrCnt = attrCnt;
-    status = addInfo(rd);
-    if(status != OK)
-    {
-        return status;
-    }
-    //set up all AttrDescs and add them to attrcat
-    int offset = 0;
-    for(int i = 0; i < attrCnt; i++)
-    {
-        attrInfo ai = attrList[i];
+  // make sure the relation doesn't already exist
 
-        strcpy(ad.relName, ai.relName);
-        strcpy(ad.attrName, ai.attrName);
-        ad.attrLen = ai.attrLen;
-        ad.attrType = ai.attrType;
-        ad.attrOffset = offset;
-        offset += ad.attrLen;
-        status = attrCat->addInfo(ad);
-        if(status != OK)
-            return status;
+  status = getInfo(relation, rd);
+  if (status == OK)
+    return RELEXISTS;
+  if (status != RELNOTFOUND)
+    return status;
+
+  // make sure there are no duplicate attribute names
+
+  unsigned int tupleWidth = attrList[0].attrLen;
+
+  if (attrCnt > 1) {
+    for(int i = 1; i < attrCnt; i++) {
+      tupleWidth += attrList[i].attrLen;
+      for(int j = 0; j < i; j++)
+	if (strcmp(attrList[i].attrName, attrList[j].attrName) == 0)
+	  return DUPLATTR;
     }
-    //create a HeapFile instance to hold tuples of the relation
-    status = createHeapFile(relation);
-    if(status != OK)
+  }
+  
+  if (tupleWidth > PAGESIZE)            // should be more strict
+    return ATTRTOOLONG;
+
+  cout << "Creating relation " << relation << endl;
+
+  // insert information about relation
+
+  strcpy(rd.relName, relation.c_str());
+  rd.attrCnt = attrCnt;
+  if ((status = addInfo(rd)) != OK)
+    return status;
+
+  // insert information about attributes
+
+  strcpy(ad.relName, relation.c_str());
+  int offset = 0;
+  for(int i = 0; i < attrCnt; i++) {
+    if (strlen(attrList[i].attrName) >= sizeof ad.attrName)
+      return NAMETOOLONG;
+    strcpy(ad.attrName, attrList[i].attrName);
+    ad.attrOffset = offset;
+    ad.attrType = attrList[i].attrType;
+    ad.attrLen = attrList[i].attrLen;
+    if ((status = attrCat->addInfo(ad)) != OK)
     {
-        return status;
+	cout << "got error return"  << status << endl;
+      return status;
     }
-    return OK;
+    offset += ad.attrLen;
+  }
+
+  // now create the actual heapfile to hold the relation
+  status = createHeapFile (relation);
+  if (status != OK) return status;
+  return OK;
 }
-

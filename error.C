@@ -1,10 +1,7 @@
 #include <sys/types.h>
 #include <functional>
 #include <iostream>
-#include "stdio.h"
-
 using namespace std;
-
 #include "error.h"
 
 void Error::print(Status status)
@@ -23,7 +20,7 @@ void Error::print(Status status)
     case FILETABFULL:  cerr << "open file table full"; break;
     case FILEOPEN:     cerr << "file open"; break;
     case FILENOTOPEN:  cerr << "file not open"; break;
-    case UNIXERR:      cerr << "Unix error"; perror("Unix error"); break;
+    case UNIXERR:      cerr << "Unix error"; break;
     case BADPAGEPTR:   cerr << "bad page pointer"; break;
     case BADPAGENO:    cerr << "bad page number"; break;
     case FILEEXISTS:   cerr << "file exists already"; break;

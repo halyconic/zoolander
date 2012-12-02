@@ -2,7 +2,9 @@
 #include <unistd.h>
 #include "catalog.h"
 #include "query.h"
+#include "stdio.h"
 #include "stdlib.h"
+
 
 DB db;
 Error error;

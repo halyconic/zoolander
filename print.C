@@ -11,8 +11,8 @@
 // Compute widths of columns in attribute array.
 //
 
-const Status UT_computeWidth(const int attrCnt,
-			     const AttrDesc attrs[],
+const Status UT_computeWidth(const int attrCnt, 
+			     const AttrDesc attrs[], 
 			     int *&attrWidth)
 {
   attrWidth = new int [attrCnt];
@@ -131,7 +131,7 @@ const Status UT_Print(string relation)
     UT_printRec(attrCnt, attrs, attrWidth, rec);
     records++;
   }
-
+  if (status != FILEEOF)
     return status;
 
   cout << endl << "Number of records: " << records << endl;
