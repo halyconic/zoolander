@@ -17,6 +17,8 @@ const Status QU_Insert(const string & relation,
 	/*
 	 * Initial code, based on getRelInfo and createRel
 	 *
+	 * Are the right errors used?
+	 *
 	 * Initialize scan
 	 */
 	Status status;
@@ -36,8 +38,35 @@ const Status QU_Insert(const string & relation,
 	 */
 
 	rec = Record();
-	rec.data = NULL;
 	rec.length = 0;
+
+	// find total size of record needed
+	for (int i = 0; i < attrCnt; i++)
+	{
+		const attrInfo curr_info = attrList[i];
+
+		if (curr_info.attrLen < 0)
+			return INVALIDRECLEN;
+
+		// Do I need to switch b/w types here and set values?
+		rec.length += curr_info.attrLen;
+	}
+
+	// copy attributes into rec
+	rec.data = new char[rec.length];
+	int data_index = 0;
+	char* data_arr = (char*) rec.data;
+	for (int i = 0; i < attrCnt; i++)
+	{
+		const attrInfo curr_info = attrList[i];
+
+		if (data_index > rec.length)
+			return INVALIDRECLEN;
+
+		memcpy(&data_arr[data_index], curr_info.attrValue, curr_info.attrLen);
+
+		data_index += curr_info.attrLen;
+	}
 
 	/*
 	 * Execute scan
