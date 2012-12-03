@@ -22,7 +22,7 @@ const Status ScanSelect(const string & result,
  *  projNames - an array of the attrInfo for the profections
  *  attr - the type for the selection attribute
  *  op - the operation to consider in selection
- *  attrValue -the actuall attribute value for the selection
+ *  attrValue -the actual attribute value for the selection
  *
  * Returns:
  * 	OK on success
@@ -145,6 +145,11 @@ const Status ScanSelect(const string & result,
         resultTupCnt++;
         }
     }
+    status = scan.endScan();
+     if (status != OK) {
+		return status; 
+	}
+    
 	printf("Select produced %d result tuples \n", resultTupCnt);
     return OK;
 }
