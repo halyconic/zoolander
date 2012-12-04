@@ -19,7 +19,7 @@ const int reclen);
  * Inputs:
  * result - address of the name of the result file
  * projCnt - the number of projections
- * projNames - an array of the attrInfo for the profections
+ * projNames - an array of the attrInfo for the projections
  * attr - the type for the selection attribute
  * op - the operation to consider in selection
  * attrValue -the actual attribute value for the selection
@@ -30,11 +30,11 @@ const int reclen);
  */
 
 const Status QU_Select(const string & result,
-const int projCnt,
-const attrInfo projNames[],
-const attrInfo *attr,
-const Operator op,
-const char *attrValue)
+                        const int projCnt,
+                        const attrInfo projNames[],
+                        const attrInfo *attr,
+                        const Operator op,
+                        const char *attrValue)
 {
     // Qu_Select sets up things and then calls ScanSelect to do the actual work
     cout << "Doing QU_Select " << endl;
@@ -52,15 +52,6 @@ const char *attrValue)
             return status;
         }
     }
-    
-    // get AttrDesc structure for the first select attribute
-    AttrDesc attrDescTemp;
-    status = attrCat->getInfo(attr->relName,
-                                     attr->attrName,
-                                     attrDescTemp);
-    if (status != OK){
-        return status;
-    }
 
     // get output record length from attrdesc structures
     int reclen = 0;
@@ -68,23 +59,50 @@ const char *attrValue)
         reclen += attrDescArray[i].attrLen;
     }
 
-    status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, attrValue, reclen);
+    if(attr != NULL){    
+        // get AttrDesc structure for the first select attribute
+        AttrDesc attrDescTemp;
+        status = attrCat->getInfo(attr->relName,
+                                     attr->attrName,
+                                     attrDescTemp);
+        if (status != OK){
+            return status;
+        }
 
-    if (status != OK){
-        return status;
+        status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, 
+                            attrValue, reclen);
+        if (status != OK){
+            return status;
+        }
     }
+    else{
+        // get AttrDesc structure from projNames
+        AttrDesc attrDescTemp;
+        status = attrCat->getInfo(projNames[0].relName,
+                                  projNames[0].attrName,
+                                  attrDescTemp);
+        if (status != OK){
+            return status;
+        }
 
+        //called with NULL filter for unconditional scan
+        status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, 
+                            NULL, reclen); 
+        if (status != OK){
+            return status;
+        }
+    }
     return OK;
 }
 
 
 const Status ScanSelect(const string & result,
-const int projCnt,
-const AttrDesc projNames[],
-const AttrDesc *attrDesc,
-const Operator op,
-const char *filter,
-const int reclen)
+                        const int projCnt,
+                        const AttrDesc projNames[],
+                        const AttrDesc *attrDesc,
+                        const Operator op,
+                        const char *filter,
+                        const int reclen)
 {
     cout << "Doing HeapFileScan Selection using ScanSelect()" << endl;
     Status status;
@@ -107,11 +125,16 @@ const int reclen)
         return status;
     }
 
-    status = scan.startScan(attrDesc->attrOffset, // Offset
-                            attrDesc->attrLen, // Length
-                            (Datatype)(attrDesc->attrType), // data type
-                            filter, // filter
-                            op); //Operator
+    if(filter == NULL){
+        status = scan.startScan(0, 0, STRING, NULL, EQ);
+    }
+    else{
+        status = scan.startScan(attrDesc->attrOffset, // Offset
+                                attrDesc->attrLen, // Length
+                                (Datatype)(attrDesc->attrType), // data type
+                                filter, // filter
+                                op); //Operator
+    }
     if (status != OK) {
         return status;
     }
