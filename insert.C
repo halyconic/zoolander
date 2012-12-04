@@ -141,6 +141,7 @@ const Status QU_Insert(const string & relation,
     Status status;
     Record insertRec;
     RID rid;
+    int reclen = 0;
 
 
 
@@ -153,10 +154,19 @@ const Status QU_Insert(const string & relation,
         free(attrs);
         return ATTRTYPEMISMATCH;
     }
+    for(int i = 0; i < numAttrsInCat; i ++)
+    {
+    	reclen += attrs[i].attrLen;
+    }
+
+
+    char outputData[reclen];
+    insertRec.data = (void *) outputData;
+    insertRec.length = reclen;
 
     // for each attrDesc in attrs
     // find the attrInfo that corresponds to it (could be in wrong order), and insert into Record
-    int count = 0;
+    int outputOffset = 0;
     for(int i = 0; i < numAttrsInCat; i++)
     {
         AttrDesc ithAttr = attrs[i];
@@ -169,27 +179,26 @@ const Status QU_Insert(const string & relation,
                 free(attrs);
                 return ATTRTYPEMISMATCH;
             }
-            if(ithAttr.attrName == jthAttr.attrName && ithAttr.attrType == jthAttr.attrType)
+
+            if((strcmp(ithAttr.attrName,jthAttr.attrName) == 0) && ithAttr.attrType == jthAttr.attrType)
             {
+            	j = attrCnt;
                 test = 0;
                 if(ithAttr.attrType == INTEGER)
                 {
-                    int intVal = atoi((char*)jthAttr.attrValue);
-                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &intVal, sizeof(int));
-                    count += sizeof(int);
+                	int intVal = atoi((char*)jthAttr.attrValue);
+                	memcpy(outputData + outputOffset, &intVal, ithAttr.attrLen);
                 }
                 else if(ithAttr.attrType == FLOAT)
                 {
-                    float floatVal = atof((char*)jthAttr.attrValue);
-                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &floatVal, sizeof(float));
-                    count += sizeof(float);
+                	float floatVal = atof((char*)jthAttr.attrValue);
+                	memcpy(outputData + outputOffset, &floatVal, ithAttr.attrLen);
                 }
                 else
                 {
-                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &jthAttr.attrValue, ithAttr.attrLen);
-                    count += ithAttr.attrLen;
+                	 memcpy(outputData + outputOffset, (char*)jthAttr.attrValue, ithAttr.attrLen);
                 }
-
+                outputOffset += ithAttr.attrLen;
             }
         }
         if(test == -1)
@@ -198,7 +207,6 @@ const Status QU_Insert(const string & relation,
             return ATTRTYPEMISMATCH;
         }
     }
-    insertRec.length = count;
      // set up InsertFileScan
     ifs = new InsertFileScan(relation, status);
     status = ifs->insertRecord(insertRec, rid);

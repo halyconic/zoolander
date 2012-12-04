@@ -26,8 +26,24 @@ const Status QU_Delete(const string & relation,
     hfs = new HeapFileScan(relation, status);
     if (status != OK) return status;
 
-    if ((status = hfs->startScan(record.attrOffset, record.attrLen, type,
-              attrValue, op)) != OK)
+    if(type == INTEGER)
+    {
+    	int intVal = atoi(attrValue);
+    	status = hfs->startScan(record.attrOffset, record.attrLen, type,
+    	              (char*)(&intVal), op);
+    }
+    else if(type == FLOAT)
+    {
+    	float floatVal = atof(attrValue);
+    	status = hfs->startScan(record.attrOffset, record.attrLen, type,
+    	              (char*)(&floatVal), op);
+    }
+    else
+    {
+    	status = hfs->startScan(record.attrOffset, record.attrLen, type,
+    	              attrValue, op);
+    }
+    if (status != OK)
     {
         delete hfs;
         return status;

@@ -59,7 +59,7 @@ const Status QU_Select(const string & result,
         reclen += attrDescArray[i].attrLen;
     }
 
-    if(attr != NULL){    
+    if(attr != NULL){
         // get AttrDesc structure for the first select attribute
         AttrDesc attrDescTemp;
         status = attrCat->getInfo(attr->relName,
@@ -68,9 +68,23 @@ const Status QU_Select(const string & result,
         if (status != OK){
             return status;
         }
-
-        status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, 
-                            attrValue, reclen);
+        if(attr->attrType == INTEGER)
+        {
+        	int intVal = atoi(attrValue);
+        	status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op,
+        	                            (char*)(&intVal), reclen);
+        }
+        else if(attr->attrType == FLOAT)
+        {
+        	float floatVal = atof(attrValue);
+        	status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op,
+        	                            (char*)(&floatVal), reclen);
+        }
+        else
+        {
+        	status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op,
+        	                            attrValue, reclen);
+        }
         if (status != OK){
             return status;
         }
@@ -86,8 +100,8 @@ const Status QU_Select(const string & result,
         }
 
         //called with NULL filter for unconditional scan
-        status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, 
-                            NULL, reclen); 
+        status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op,
+                            NULL, reclen);
         if (status != OK){
             return status;
         }
@@ -152,21 +166,20 @@ const Status ScanSelect(const string & result,
         // copy the data out of the proper input file (inner vs. outer)
             memcpy(outputData + outputOffset, (char *)scanRec.data +
             projNames[i].attrOffset, projNames[i].attrLen);
-        
+
             outputOffset += projNames[i].attrLen;
-        
-        // add the new record to the output relation
+        }
+         // add the new record to the output relation
         RID outRID;
         status = resultRel.insertRecord(outputRec, outRID);
         ASSERT(status == OK);
         resultTupCnt++;
-        }
     }
     status = scan.endScan();
 	if (status != OK) {
 		return status;
 	}
-    
+
 	printf("Select produced %d result tuples \n", resultTupCnt);
     return OK;
 }
