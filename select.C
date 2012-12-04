@@ -54,15 +54,21 @@ const Status QU_Select(const string & result,
         }
     } 
     
-	// get AttrDesc structure for the first select attribute
-    AttrDesc attrDescTemp;
-    status = attrCat->getInfo(attr->relName,
+	if(attr != NULL){
+		// get AttrDesc structure for the select attribute
+    	AttrDesc attrDescTemp;
+    	status = attrCat->getInfo(attr->relName,
                                      attr->attrName,
                                      attrDescTemp);
-    if (status != OK)
-    {
-        return status;
-    }
+    	if (status != OK)
+    	{
+    	    return status;
+    	}
+	
+	}
+	else{
+		AttrDesc attrDescTemp = NULL;
+	}
 
 	// get output record length from attrdesc structures
     int reclen = 0;
@@ -70,9 +76,8 @@ const Status QU_Select(const string & result,
     {
         reclen += attrDescArray[i].attrLen;
     }	
-
 	status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, attrValue, reclen);
-	
+		
 	if (status != OK)
     {
         return status;
@@ -105,24 +110,36 @@ const Status ScanSelect(const string & result,
     Record outputRec;
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
-
-	HeapFileScan scan(string(attrDesc->relName), status);
-    if (status != OK){
-		return status; 
-	}
 	
-    status = scan.startScan(attrDesc->attrOffset, // Offset
+	if(attrDesc == NULL){
+		HeapFileScan scan(string(attrDesc->relName), status);
+    	if (status != OK){
+			return status; 
+		}
+	
+    	status = scan.startScan(attrDesc->attrOffset, // Offset
                             attrDesc->attrLen, // Length
                             (Datatype)(attrDesc->attrType), // data type
                             filter, // filter
                             op); //Operator
-    if (status != OK) {
-		return status; 
+    	if (status != OK) {
+			return status; 
+		}
+	}
+	else{
+		HeapFileScan scan(projNames[0].relName, status);
+    	if (status != OK){
+			return status; 
+		}
+    	status = scan.startScan(0, 0, STRING, NULL, EQ);
+    	if (status != OK) {
+			return status; 
+		}
 	}
 	
     RID scanRID;
     Record scanRec;
-
+	
 	while (scan.scanNext(scanRID) == OK)
     {
         status = scan.getRecord(scanRec);
@@ -132,7 +149,7 @@ const Status ScanSelect(const string & result,
         int outputOffset = 0;
         for (int i = 0; i < projCnt; i++)
         {
-        // copy the data out of the proper input file (inner vs. outer)
+        // copy the data out of the proper input file
             memcpy(outputData + outputOffset, (char *)scanRec.data +
 				   projNames[i].attrOffset, projNames[i].attrLen);
         
