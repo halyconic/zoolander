@@ -49,6 +49,8 @@ enum Status {
 
 // Utility errors
 
+       BADATTRTYPE,
+
 // Query errors
 
        ATTRTYPEMISMATCH, TMP_RES_EXISTS,
