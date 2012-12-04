@@ -68,6 +68,7 @@ const Status QU_Select(const string & result,
         if (status != OK){
             return status;
         }
+        // cast attrValue to correct value based on type. '100' != 100.
         if(attr->attrType == INTEGER)
         {
         	int intVal = atoi(attrValue);
