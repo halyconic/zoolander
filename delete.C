@@ -5,6 +5,10 @@
 /*
  * Deletes records from a specified relation.
  *
+ * relation - the table that needs some deleting
+ * attrName/op,type/attrValue - these form the predicate of the search
+ *                              so we know which tuples in relation need
+ *                              deleting.
  * Returns:
  * 	OK on success
  * 	an error code otherwise
@@ -22,10 +26,13 @@ const Status QU_Delete(const string & relation,
     RID rid;
     AttrDesc record;
 
+    //get the AttrDesc of attrName (the attribute we're matching on)
     attrCat->getInfo(relation, attrName, record);
     hfs = new HeapFileScan(relation, status);
     if (status != OK) return status;
 
+    // make sure to convert searches for numbers to their respective data type
+    // and start the scan up
     if(type == INTEGER)
     {
     	int intVal = atoi(attrValue);
