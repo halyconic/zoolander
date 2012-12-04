@@ -1,5 +1,5 @@
-#include "catalog.h"
-#include "query.h"
+//#include "catalog.h"
+//#include "query.h"
 
 
 /*
@@ -10,8 +10,8 @@
  * 	an error code otherwise
  */
 
-const Status QU_Insert(const string & relation, 
-	const int attrCnt, 
+/*const Status QU_Insert(const string & relation,
+	const int attrCnt,
 	const attrInfo attrList[])
 {
 	/*
@@ -20,7 +20,7 @@ const Status QU_Insert(const string & relation,
 	 * Are the right errors used?
 	 *
 	 * Initialize scan
-	 */
+	 *
 	Status status;
 	RID rid;
 	Record rec;
@@ -37,8 +37,8 @@ const Status QU_Insert(const string & relation,
 	 * Create record using catalog and offsets
 	 */
 
-	rec = Record();
-	rec.length = 0;
+	//rec = Record();
+	//rec.length = 0;
 
 //	// find total size of record needed
 //	for (int i = 0; i < attrCnt; i++)
@@ -53,7 +53,7 @@ const Status QU_Insert(const string & relation,
 //	}
 
 	// find total size of record needed
-	for (int i = 0; i < attrCnt; i++)
+	/*for (int i = 0; i < attrCnt; i++)
 	{
 		const attrInfo curr_info = attrList[i];
 
@@ -111,12 +111,108 @@ const Status QU_Insert(const string & relation,
 	 * Execute scan
 	 */
 
-	status = ifs->insertRecord(rec, rid);
+	/*status = ifs->insertRecord(rec, rid);
 	if (status != OK) return status;
 
 	delete ifs;
-	
+
 	// part 6
 	return OK;
+}*/
+
+#include "catalog.h"
+#include "query.h"
+
+
+/*
+ * Inserts a record into the specified relation.
+ *
+ * Returns:
+ * 	OK on success
+ * 	an error code otherwise
+ */
+
+const Status QU_Insert(const string & relation,
+	const int attrCnt,
+	const attrInfo attrList[])
+{
+    // part 6
+    InsertFileScan* ifs;
+    Status status;
+    Record insertRec;
+    RID rid;
+
+
+
+    // set up Record to insert
+    AttrDesc* attrs;
+    int numAttrsInCat;
+    status = attrCat->getRelInfo(relation, numAttrsInCat, attrs);
+    if(numAttrsInCat != attrCnt)
+    {
+        free(attrs);
+        return ATTRTYPEMISMATCH;
+    }
+
+    // for each attrDesc in attrs
+    // find the attrInfo that corresponds to it (could be in wrong order), and insert into Record
+    int count = 0;
+    for(int i = 0; i < numAttrsInCat; i++)
+    {
+        AttrDesc ithAttr = attrs[i];
+        int test = -1;
+        for(int j = 0; j < attrCnt; j++)
+        {
+            attrInfo jthAttr = attrList[j];
+            if(jthAttr.attrValue == 0)
+            {
+                free(attrs);
+                return ATTRTYPEMISMATCH;
+            }
+            if(ithAttr.attrName == jthAttr.attrName && ithAttr.attrType == jthAttr.attrType)
+            {
+                test = 0;
+                if(ithAttr.attrType == INTEGER)
+                {
+                    int intVal = atoi((char*)jthAttr.attrValue);
+                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &intVal, sizeof(int));
+                    count += sizeof(int);
+                }
+                else if(ithAttr.attrType == FLOAT)
+                {
+                    float floatVal = atof((char*)jthAttr.attrValue);
+                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &floatVal, sizeof(float));
+                    count += sizeof(float);
+                }
+                else
+                {
+                    memcpy((char*)insertRec.data + ithAttr.attrOffset, &jthAttr.attrValue, ithAttr.attrLen);
+                    count += ithAttr.attrLen;
+                }
+
+            }
+        }
+        if(test == -1)
+        {
+            free(attrs);
+            return ATTRTYPEMISMATCH;
+        }
+    }
+    insertRec.length = count;
+     // set up InsertFileScan
+    ifs = new InsertFileScan(relation, status);
+    status = ifs->insertRecord(insertRec, rid);
+    if(status != OK)
+    {
+        delete ifs;
+        free(attrs);
+        return status;
+    }
+
+    delete ifs;
+    free(attrs);
+    return OK;
+
 }
+
 

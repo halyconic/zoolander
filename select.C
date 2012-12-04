@@ -52,7 +52,7 @@ const char *attrValue)
             return status;
         }
     }
-    
+
     // get AttrDesc structure for the first select attribute
     AttrDesc attrDescTemp;
     status = attrCat->getInfo(attr->relName,
@@ -129,9 +129,9 @@ const int reclen)
         // copy the data out of the proper input file (inner vs. outer)
             memcpy(outputData + outputOffset, (char *)scanRec.data +
             projNames[i].attrOffset, projNames[i].attrLen);
-        
+
             outputOffset += projNames[i].attrLen;
-        
+
         // add the new record to the output relation
         RID outRID;
         status = resultRel.insertRecord(outputRec, outRID);
@@ -143,7 +143,9 @@ const int reclen)
 	if (status != OK) {
 		return status;
 	}
-    
+
 	printf("Select produced %d result tuples \n", resultTupCnt);
+	delete resultRel;
+	delete scan;
     return OK;
 }
