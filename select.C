@@ -91,7 +91,7 @@ const int reclen)
     int resultTupCnt = 0;
 
     // open the result table
-    InsertFileScan resultRel(result, status);
+    InsertFileScan* resultRel = new InsertFileScan(result, status);
     if (status != OK){
         return status;
     }
@@ -102,12 +102,12 @@ const int reclen)
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
 
-    HeapFileScan scan(string(attrDesc->relName), status);
+    HeapFileScan* scan = new HeapFileScan(string(attrDesc->relName), status);
     if (status != OK){
         return status;
     }
 
-    status = scan.startScan(attrDesc->attrOffset, // Offset
+    status = scan->startScan(attrDesc->attrOffset, // Offset
                             attrDesc->attrLen, // Length
                             (Datatype)(attrDesc->attrType), // data type
                             filter, // filter
@@ -119,8 +119,8 @@ const int reclen)
     RID scanRID;
     Record scanRec;
 
-    while (scan.scanNext(scanRID) == OK){
-        status = scan.getRecord(scanRec);
+    while (scan->scanNext(scanRID) == OK){
+        status = scan->getRecord(scanRec);
         ASSERT(status == OK);
 
         // we have a match, copy data into the output record
@@ -150,11 +150,11 @@ const int reclen)
         }
          // add the new record to the output relation
         RID outRID;
-        status = resultRel.insertRecord(outputRec, outRID);
+        status = resultRel->insertRecord(outputRec, outRID);
         ASSERT(status == OK);
         resultTupCnt++;
     }
-    status = scan.endScan();
+    status = scan->endScan();
 	if (status != OK) {
 		return status;
 	}
