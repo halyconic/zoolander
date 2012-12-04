@@ -127,17 +127,32 @@ const int reclen)
         int outputOffset = 0;
         for (int i = 0; i < projCnt; i++){
         // copy the data out of the proper input file (inner vs. outer)
-            memcpy(outputData + outputOffset, (char *)scanRec.data +
-            projNames[i].attrOffset, projNames[i].attrLen);
+            if(projNames[i].attrType == INTEGER)
+            {
+                int intVal = atoi((char*)scanRec.data + projNames[i].attrOffset);
+                memcpy(outputData + outputOffset, &intVal, sizeof(int));
+            }
+            else if(projNames[i].attrType == FLOAT)
+            {
+                float floatVal = atof((char*)scanRec.data + projNames[i].attrOffset);
+                memcpy(outputData + outputOffset, &floatVal, sizeof(float));
+            }
+            else
+            {
+                memcpy(outputData + outputOffset, (char*)scanRec.data + projNames[i].attrOffset, projNames[i].attrLen);
+            }
+            /*memcpy(outputData + outputOffset, (char *)scanRec.data +
+            projNames[i].attrOffset, projNames[i].attrLen);*/
 
             outputOffset += projNames[i].attrLen;
 
-        // add the new record to the output relation
+
+        }
+         // add the new record to the output relation
         RID outRID;
         status = resultRel.insertRecord(outputRec, outRID);
         ASSERT(status == OK);
         resultTupCnt++;
-        }
     }
     status = scan.endScan();
 	if (status != OK) {
