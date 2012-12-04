@@ -114,6 +114,8 @@ const Status QU_Insert(const string & relation,
 	status = ifs->insertRecord(rec, rid);
 	if (status != OK) return status;
 
+	delete ifs;
+	
 	// part 6
 	return OK;
 }

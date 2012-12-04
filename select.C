@@ -22,7 +22,7 @@ const Status ScanSelect(const string & result,
  *  projNames - an array of the attrInfo for the profections
  *  attr - the type for the selection attribute
  *  op - the operation to consider in selection
- *  attrValue -the actuall attribute value for the selection
+ *  attrValue -the actual attribute value for the selection
  *
  * Returns:
  * 	OK on success
@@ -53,16 +53,17 @@ const Status QU_Select(const string & result,
             return status;
         }
     } 
-    
-	// get AttrDesc structure for the first select attribute
-    AttrDesc attrDescTemp;
-    status = attrCat->getInfo(attr->relName,
+    AttrDesc *attrDescTemp = NULL;
+	if(attr != NULL){
+		// get AttrDesc structure for the select attribute
+    	status = attrCat->getInfo(attr->relName,
                                      attr->attrName,
-                                     attrDescTemp);
-    if (status != OK)
-    {
-        return status;
-    }
+                                     *attrDescTemp);
+    	if (status != OK)
+    	{
+    	    return status;
+    	}
+	}
 
 	// get output record length from attrdesc structures
     int reclen = 0;
@@ -70,9 +71,8 @@ const Status QU_Select(const string & result,
     {
         reclen += attrDescArray[i].attrLen;
     }	
-
-	status = ScanSelect(result, projCnt, attrDescArray, &attrDescTemp, op, attrValue, reclen);
-	
+	status = ScanSelect(result, projCnt, attrDescArray, attrDescTemp, op, attrValue, reclen);
+		
 	if (status != OK)
     {
         return status;
@@ -105,46 +105,87 @@ const Status ScanSelect(const string & result,
     Record outputRec;
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
-
+	
+	if(attrDesc != NULL){
 	HeapFileScan scan(string(attrDesc->relName), status);
     if (status != OK){
 		return status; 
 	}
 	
-    status = scan.startScan(attrDesc->attrOffset, // Offset
+	
+    	status = scan.startScan(attrDesc->attrOffset, // Offset
                             attrDesc->attrLen, // Length
                             (Datatype)(attrDesc->attrType), // data type
                             filter, // filter
                             op); //Operator
-    if (status != OK) {
+    	if (status != OK) {
+			return status; 
+		}
+	RID scanRID;
+    Record scanRec;
+	
+	while (scan.scanNext(scanRID) == OK){
+	        status = scan.getRecord(scanRec);
+	        ASSERT(status == OK);
+
+	        // we have a match, copy data into the output record
+	        int outputOffset = 0;
+	        for (int i = 0; i < projCnt; i++){
+
+		        // copy the data out of the proper input file
+	            memcpy(outputData + outputOffset, (char *)scanRec.data +
+					   projNames[i].attrOffset, projNames[i].attrLen);
+	        
+				outputOffset += projNames[i].attrLen;
+	        
+				// add the new record to the output relation
+		        RID outRID;
+		        status = resultRel.insertRecord(outputRec, outRID);
+		        ASSERT(status == OK);
+		        resultTupCnt++;
+	        }
+    }
+	status = scan.endScan();
+	if (status != OK) {
 		return status; 
 	}
+
+	}
+	else{
+		HeapFileScan scan(projNames[0].relName, status);
+    	status = scan.startScan(0, 0, STRING, NULL, EQ);
+    	if (status != OK) {
+			return status; 
+		}
+		RID scanRID;
+    	Record scanRec;
 	
-    RID scanRID;
-    Record scanRec;
+		while (scan.scanNext(scanRID) == OK){
+	        status = scan.getRecord(scanRec);
+    	    ASSERT(status == OK);
 
-	while (scan.scanNext(scanRID) == OK)
-    {
-        status = scan.getRecord(scanRec);
-        ASSERT(status == OK);
-
-        // we have a match, copy data into the output record
-        int outputOffset = 0;
-        for (int i = 0; i < projCnt; i++)
-        {
-        // copy the data out of the proper input file (inner vs. outer)
-            memcpy(outputData + outputOffset, (char *)scanRec.data +
+    	    // we have a match, copy data into the output record
+    	    int outputOffset = 0;
+    	    for (int i = 0; i < projCnt; i++){
+	    	    // copy the data out of the proper input file
+    	        memcpy(outputData + outputOffset, (char *)scanRec.data +
 				   projNames[i].attrOffset, projNames[i].attrLen);
         
-		outputOffset += projNames[i].attrLen;
+				outputOffset += projNames[i].attrLen;
         
-		// add the new record to the output relation
-        RID outRID;
-        status = resultRel.insertRecord(outputRec, outRID);
-        ASSERT(status == OK);
-        resultTupCnt++;
-        }
-    }
-	printf("Select produced %d result tuples \n", resultTupCnt);
+				// add the new record to the output relation
+    		    RID outRID;
+   			    status = resultRel.insertRecord(outputRec, outRID);
+        		ASSERT(status == OK);
+		        resultTupCnt++;
+        	}
+    	}
+    	status = scan.endScan();
+     	if (status != OK) {
+			return status; 
+		}
+	}
+
+ 	printf("Select produced %d result tuples \n", resultTupCnt);
     return OK;
 }
