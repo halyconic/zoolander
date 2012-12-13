@@ -7,16 +7,14 @@ require_once('db_display.php');
 <html>
 
 <head>
-	<title>Update Page</title>
+	<title>Advanced Search Page</title>
 </head>
 
 <body>
     <p>
     <?php
-        # May want Javascript here if need scrollable
-
         # Displays the result of the query
-        get_browse($pg_conn);
+        get_advanced($pg_conn);
     ?>
     </p>
 </body>

@@ -1,5 +1,7 @@
 <?php
 
+#TODO: Change the queries!
+
 # This file performs all the queries. Call these functions after connecting to the database and pass in the connection
 
 # This prints into a javascript array. This may not be what you need, but its a good example
@@ -21,6 +23,21 @@ function get_basic_js($pg_conn)
         print(",'$row[0] $row[1]'");
     }
     print("];");
+}
+
+# Print into HTML
+# Basic query
+function get_basic($pg_conn)
+{
+    $result = pg_query($pg_conn, "SELECT query, stuff FROM table WHERE table.id = 1");
+
+    if (!$result) {
+        echo "An error occured.\n";
+        exit;
+    }
+
+    # print here
+    print("Successful!");
 }
 
 # Advanced query

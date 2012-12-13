@@ -13,10 +13,8 @@ require_once('db_display.php');
 <body>
     <p>
     <?php
-        # May want Javascript here if need scrollable
-
         # Displays the result of the query
-        get_browse($pg_conn);
+        get_advanced($pg_conn);
     ?>
     </p>
 </body>
