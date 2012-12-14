@@ -72,8 +72,6 @@ function get_advanced($pg_conn, $table_args, $table_commands)
                 $query = $query . ' sname=$' . $param_num;
             }
 
-            $query = $query . '$' . $param_num;
-
             # Add to array
             $stack[] = $table_commands['sname'];
             $param_num++;
