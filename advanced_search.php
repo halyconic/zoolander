@@ -1,6 +1,6 @@
 <?php
 
-require_once('db_connect.php');
+#require_once('db_connect.php');
 require_once('db_display.php');
 
 ?>
@@ -33,7 +33,7 @@ require_once('db_display.php');
                 $table_args = array($_POST['operator_name'], $_POST['operator_sqft'], $_POST['operator_water'], $_POST['operator_food']);      
 
                 $pg_conn = pg_connect('dbname=cs564_f12 host=postgres.cs.wisc.edu')
-		or die ("Couldn't Connect ".pg_last_error());
+		            or die ("Couldn't Connect ".pg_last_error());
 
                 get_advanced($pg_conn, $table_args, $table_commands);
             ?>
