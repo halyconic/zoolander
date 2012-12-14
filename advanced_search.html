@@ -1,21 +1,43 @@
 <html>
 
 <head>
-	<title>CS 564 PHP Project: Choose a Title</title>
+	<title>CS 564 PHP Project: Advanced Choose a Species</title>
 </head>
 
 <body>
-	<p>
-	This part provides an advanced search capability. That is, one should be able
-	to search for books using a combination of attributes, such as title and price, 
-	or title and quantity, etc.
-	</p>
-	
-	<p>
-	We do not provide a sample implementation 
-	for this part, in the book domain. You will have to implement such an advanced
-	search capability for your project domain.
-	</p>
+
+<h1>CS 564 PHP Project: How Many Animals Do We Have To Take Care Of? (Advanced)</h1>
+
+<p>
+This part provides an advanced search capability. You can select each major table attribute and search for a value matching the conditions supplied. The name search will attempt to match similar names to what you entered (ie. gira returns giraffe).
+</p>
+
+<table width="30%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
+    <form name="form1" method="post" action="https://cs564.cs.wisc.edu/nmurray/advanced_search.php">
+        <tr align="center">
+            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
+            <td height="30" class="deepred" width="52%"><input type="text" name="aName"></td>
+        </tr>
+        <tr>
+            <td height="30" class="deepred" width="52%">
+                <select name="operator_name">
+                    <option value="none"> -- </option>
+                    <option value="exactly">is exactly</option>
+                    <option value="like">is like</option>
+                    <option value="unlike">is not like</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td height="24" align="center" width="48%"></td>
+            <td align="center" width="52%">
+                <input type="submit" name="Submit" value="Submit">
+                <input type="reset" name="Submit2" value="Reset">
+            </td>
+        </tr>
+    </form>
+</table>
+
 </body>
 
 </html>

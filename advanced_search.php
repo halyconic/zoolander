@@ -12,6 +12,8 @@ require_once('db_display.php');
 
 <body>
 
+<h1>CS 564 PHP Project: How Many Animals Do We Have To Take Care Of? (Advanced)</h1>
+
 <tr>
     <td colspan="2" align="center" valign="top">
         Basic search results (searched by name):<br>
@@ -31,6 +33,8 @@ require_once('db_display.php');
         </table>
     </td>
 </tr>
+
+<?php echo "<a href=\"https://cs564.cs.wisc.edu/nmurray/advanced_search.html\">Return to advanced search</a>\n"?>
 
 </body>
 
