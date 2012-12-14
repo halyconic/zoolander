@@ -28,11 +28,14 @@ require_once('db_display.php');
             </tr>
             <?php
                 # Displays the result of the query
-                get_advanced(
-                    $pg_conn,
-                    $_POST['operator'],
-                    $_POST['sname'],
-                );
+
+                $table_commands = array($_POST['sname'], $_POST['sqftneed'], $_POST['wateramt'], $_POST['num']);
+                $table_args = array($_POST['operator_name'], $_POST['operator_sqft'], $_POST['operator_water'], $_POST['operator_food']);      
+
+                $pg_conn = pg_connect('dbname=cs564_f12 host=postgres.cs.wisc.edu')
+		or die ("Couldn't Connect ".pg_last_error());
+
+                get_advanced($pg_conn, $table_args, $table_commands);
             ?>
         </table>
     </td>
