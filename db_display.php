@@ -140,6 +140,10 @@ function get_advanced($pg_conn, $table_args, $table_commands)
 
     # print here
 
+    echo "<p>";
+    echo $query;
+    echo "</p>\n";
+
     while($row = pg_fetch_array($result,NULL,PGSQL_ASSOC)) {
         echo "        <tr>";
         echo "\n         <td align=\"center\">";
