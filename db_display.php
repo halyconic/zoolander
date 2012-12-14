@@ -44,7 +44,7 @@ function get_basic($pg_conn)
 # http://www.postgresql.org/docs/9.1/static/sql-select.html
 function get_advanced($pg_conn, $table_args, $table_commands)
 {
-    $query = 'SELECT sname, sqftneed, wateramt, num FROM species';
+    $query = 'SELECT sname, sqftneed, wateramt, num FROM zoolander_schema.species';
 
     $param_num = 1;
 
