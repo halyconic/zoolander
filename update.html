@@ -14,6 +14,7 @@
 	Then enter values for the remaining attributes.<br> 
 	We will set those attributes to the entered values.
 	(SID is unchangeable.  This will always be constant).
+	All inputs except name should be integers.
 	</p>
 
   <table width="40%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
@@ -55,7 +56,8 @@
 
 	<p>
 	Got a new species coming to the zoo?  Fill out all the info here.
-	Please make double sure Species' ID and Exhibit ID are correct.
+	All inputs except name should be integers.
+	If species ID is not unique from SID's already in the database, an error will occur.
 	</p>
   <table width="40%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
     <form name="form1" method="post" action="insert.php">
