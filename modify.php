@@ -29,31 +29,31 @@
 	$commacheck = 0;
 	$query = "update zoolander_schema.species set";
 	if(strlen($num)) {
-	$query .= " num=".$num.;
+	$query .= " num=".$num;
 	$commacheck = 1;
 	}
-	if(commacheck == 1 && strlen($sqft)){
+	if($commacheck == 1 && strlen($sqft)){
 	$query .= ",";
 	$commacheck = 0;
 	}
 	if(strlen($sqft)){
-	$query .= " sqftneed=".$sqft.;
+	$query .= " sqftneed=".$sqft;
 	$commacheck = 1;
 	}
-	if(commacheck == 1 && strlen($wateramt)){
+	if($commacheck == 1 && strlen($wateramt)){
 	$query .= ",";
 	$commacheck = 0;
 	}
 	if(strlen($wateramt)){
-	$query .= " wateramt=".$wateramt.;
+	$query .= " wateramt=".$wateramt;
 	$commacheck = 1;
 	}
-	if(commacheck == 1 && strlen($exhibit)){
+	if($commacheck == 1 && strlen($exhibit)){
 	$query .= ",";
 	$commacheck = 0;
 	}
 	if(strlen($exhibit)){
-	$query .= " eid=".$exhibit.;
+	$query .= " eid=".$exhibit;
 	$commacheck = 1;
 	}
 	$query .= " where sname='".$aname."'";
