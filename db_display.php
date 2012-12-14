@@ -133,10 +133,31 @@ function get_advanced($pg_conn, $table_args, $table_commands)
     if (!$result) {
         echo "An error occured.\n";
         echo $query;
-        exit;
+        $errormessage = pg_last_error();
+	    echo "Error with query: " . $errormessage;
+        exit();
     }
 
     # print here
+
+    while($row = pg_fetch_array($result,NULL,PGSQL_ASSOC)) {
+        echo "        <tr>";
+        echo "\n         <td align=\"center\">";
+        echo "\n          ".$row['sname'];
+        echo "\n         </td>";
+        echo "\n         <td align=\"center\">";
+        echo "\n          ".$row['num'];
+        echo "\n         </td>";
+        echo "\n         <td align=\"center\">";
+        echo "\n          ".$row['sqftneed'];
+        echo "\n         </td>";
+        echo "\n         <td align=\"center\">";
+        echo "\n          ".$row['wateramt'];
+        echo "\n         </td>";
+        echo "\n        </tr>";
+    }
+
+    pg_close();
 }
 
 # Update query
