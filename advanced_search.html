@@ -12,13 +12,10 @@
 This part provides an advanced search capability. You can select each major table attribute and search for a value matching the conditions supplied. The name search will attempt to match similar names to what you entered (ie. gira returns giraffe).
 </p>
 
-<table width="30%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
+<table width="50%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
     <form name="form1" method="post" action="https://cs564.cs.wisc.edu/nmurray/advanced_search.php">
-        <tr align="center">
-            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
-            <td height="30" class="deepred" width="52%"><input type="text" name="aName"></td>
-        </tr>
         <tr>
+            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
             <td height="30" class="deepred" width="52%">
                 <select name="operator_name">
                     <option value="none"> -- </option>
@@ -27,6 +24,49 @@ This part provides an advanced search capability. You can select each major tabl
                     <option value="unlike">is not like</option>
                 </select>
             </td>
+            <td height="30" class="deepred" width="52%"><input type="text" name="sname"></td>
+        </tr>
+        <tr>
+            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Space needed (square feet)</font></td>
+            <td height="30" class="deepred" width="52%">
+                <select name="operator_sqft">
+                    <option value="none"> -- </option>
+                    <option value="lt"><</option>
+                    <option value="lte"><=</option>
+                    <option value="e">=</option>
+                    <option value="gte">=></option>
+                    <option value="gt">></option>
+                </select>
+            </td>
+            <td height="30" class="deepred" width="52%"><input type="text" name="sqftneed"></td>
+        </tr>
+        <tr>
+            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Water needed (liters/month)</font></td>
+            <td height="30" class="deepred" width="52%">
+                <select name="operator_water">
+                    <option value="none"> -- </option>
+                    <option value="lt"><</option>
+                    <option value="lte"><=</option>
+                    <option value="e">=</option>
+                    <option value="gte">=></option>
+                    <option value="gt">></option>
+                </select>
+            </td>
+            <td height="30" class="deepred" width="52%"><input type="text" name="wateramt"></td>
+        </tr>
+        <tr>
+            <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Number of animals</font></td>
+            <td height="30" class="deepred" width="52%">
+                <select name="operator_num">
+                    <option value="none"> -- </option>
+                    <option value="lt"><</option>
+                    <option value="lte"><=</option>
+                    <option value="e">=</option>
+                    <option value="gte">=></option>
+                    <option value="gt">></option>
+                </select>
+            </td>
+            <td height="30" class="deepred" width="52%"><input type="text" name="wateramt"></td>
         </tr>
         <tr>
             <td height="24" align="center" width="48%"></td>
