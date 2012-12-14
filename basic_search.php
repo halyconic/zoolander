@@ -75,6 +75,6 @@
 </table>
 	</td>
 	</tr>
-	<?php echo "<a href=/"https://cs564.cs.wisc.edu/nmurray/index.html\">Return to index</a>\n"?>
+	<?php echo "<a href=\"https://cs564.cs.wisc.edu/nmurray/index.html\">Return to index</a>\n"?>
 </body>
 </html>
