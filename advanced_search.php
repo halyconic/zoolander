@@ -28,7 +28,11 @@ require_once('db_display.php');
             </tr>
             <?php
                 # Displays the result of the query
-                get_advanced($pg_conn);
+                get_advanced(
+                    $pg_conn,
+                    $_POST['operator'],
+                    $_POST['sname'],
+                );
             ?>
         </table>
     </td>

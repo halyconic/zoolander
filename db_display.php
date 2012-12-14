@@ -42,9 +42,61 @@ function get_basic($pg_conn)
 
 # Advanced query
 # http://www.postgresql.org/docs/9.1/static/sql-select.html
-function get_advanced($pg_conn)
+function get_advanced($pg_conn, $table_args)
 {
-    $result = pg_query($pg_conn, "SELECT advanced, attribute FROM member WHERE member.id=1337");
+    $query = 'SELECT sname, sqftneed, wateramt, num FROM species';
+
+    $is_first = true;
+
+    # check if both params exist before appending to query
+    if (isset($table_args['sname'])) {
+        if (isset($table_args['operator_name'])) {
+            if ($is_first) {
+                $query = $query . ' WHERE';
+                $is_first = false;
+            }
+            else {
+                $query = $query . ' AND';
+            }
+        }
+    }
+    if (isset($table_args['sqftneed'])) {
+        if (isset($table_args['operator_sqft'])) {
+            if ($is_first) {
+                $query = $query . ' WHERE';
+                $is_first = false;
+            }
+            else {
+                $query = $query . ' AND';
+            }
+        }
+    }
+    if (isset($table_args['wateramt'])) {
+        if (isset($table_args['operator_water'])) {
+            if ($is_first) {
+                $query = $query . ' WHERE';
+                $is_first = false;
+            }
+            else {
+                $query = $query . ' AND';
+            }
+        }
+    }
+    if (isset($table_args['num'])) {
+        if (isset($table_args['operator_num'])) {
+            if ($is_first) {
+                $query = $query . ' WHERE';
+                $is_first = false;
+            }
+            else {
+                $query = $query . ' AND';
+            }
+        }
+    }
+
+
+
+    $result = pg_query($pg_conn, $pq_query);
 
     if (!$result) {
         echo "An error occured.\n";
