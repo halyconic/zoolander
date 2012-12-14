@@ -1,35 +1,45 @@
 <html>
 
 <head>
-	<title>CS 564 PHP Project: Choose a Title</title>
+	<title>CS 564 PHP Project: Update Page</title>
 </head>
 
 <body>
-	<h1>CS 564 PHP Project: Update Title</h1>
+	<h1>CS 564 PHP Project: Update Page</h1>
 	
-	<h2>Subtitle</h2>
+	<h2>Modify the Attributes of an Animal Currently in Zoo</h2>
 	
 	<p>
-	Enter an exact title first (so that we can locate the book).<br>
+	Enter an exact animal name first (so that we can locate the animal).<br>
 	Then enter values for the remaining attributes.<br> 
 	We will set those attributes to the entered values.
+	(SID is unchangeable.  This will always be constant).
 	</p>
 
   <table width="40%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
-    <form name="form1" method="post" action="update.php">
+    <form name="form1" method="post" action="modify.php">
       <tr align="center">
-        <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Title</font></td>
-        <td height="30" class="deepred" width="52%"><input type="text" name="title">
+        <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="aname">
 	</tr>
 	<tr align="center">
 
-	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Author</font></td>
-        <td height="30" class="deepred" width="52%"><input type="text" name="author">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Number of Animal</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="num">
 	</tr>
 	<tr align="center">
-	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Number of Copies</font></td>
-        <td height="30" class="deepred" width="52%"><input type="text" name="num">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Square Feet Needed</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="sqft">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Liters of water per day</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="wateramt">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Exhibit ID</font></td>
+	<td height="30" class="deepred" width="48%"><input type="text" name="exhibit">
         </td>
+
       </tr>
 
       <tr>
@@ -41,21 +51,77 @@
     </form>
   </table>
 
-	<h3>Insert a New Book</h3>
+	<h3>Add a New Species to the Zoo</h3>
 
 	<p>
-	In your project, at this point you need to insert a form interface
-	that would allow users to insert a new entity (e.g., book in 
-	this sample project). 
+	Got a new species coming to the zoo?  Fill out all the info here.
+	Please make double sure Species' ID and Exhibit ID are correct.
 	</p>
+  <table width="40%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
+    <form name="form1" method="post" action="insert.php">
+      <tr align="center">
+        <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="aname">
+	</tr>
+	<tr align="center">
 
-	<h3>Delete an Existing Book</h3>  
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Number of Animal</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="num">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Square Feet Needed</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="sqft">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Liters of water per day</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="wateramt">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Species ID</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="id">
+	</tr>
+	<tr align="center">
+	<td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Exhibit ID</font></td>
+	<td height="30" class="deepred" width="48%"><input type="text" name="exhibit">
+        </td>
+
+      </tr>
+
+      <tr>
+        <td height="24" align="center" width="48%">
+        </td>
+        <td align="center" width="52%"><input type="submit" name="Submit" value="Submit"><input type="reset" name="Submit2" value="Reset">
+        </td>
+      </tr>
+    </form>
+  </table>
+ 
+
+	<h3>Delete a Species from the Database</h3>  
 
 	<p>
-	In your project, at this point you need to insert a form interface
-	that would allow users to delete an existing entity (e.g., 
-	we can delete a book using a title in this sample project). 
+	Has a species gone extinct?  
+	Please use the exact name of the species that is now gone, 
+	to delete them from the database.
 	</p>
+
+   <table width="40%" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
+    <form name="form1" method="post" action="delete.php">
+      <tr align="center">
+        <td height="30" class="deepred" width="48%"><font face="Times New Roman, Times, serif">Animal Name</font></td>
+        <td height="30" class="deepred" width="52%"><input type="text" name="aname">
+        </td>
+
+      </tr>
+
+      <tr>
+        <td height="24" align="center" width="48%">
+        </td>
+        <td align="center" width="52%"><input type="submit" name="Submit" value="Submit"><input type="reset" name="Submit2" value="Reset">
+        </td>
+      </tr>
+    </form>
+  </table>
 
 </body>
 
