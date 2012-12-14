@@ -13,7 +13,7 @@
 	exit();
   }
 
-  //grab other values from form
+  //grab values from form
   $aname = $_POST['aname'];
   $num = $_POST['num'];
   $sqft = $_POST['sqft'];
@@ -58,9 +58,9 @@
 	}
 	$query .= " where sname='".$aname."'";
 
-  }else
+  }else{
 	echo "  <h3><i>no field to be updated</i></h3>\n".
-	     " <a href=\"https://cs564.cs.wisc.edu/nmurray/index.html\">Back to index</a>\n".
+	     " <a href=\"https://cs564.cs.wisc.edu/nmurray/update.html\">Back to update page</a>\n".
 	     " </body>\n</html>\n";
 	exit();
   }
@@ -76,7 +76,7 @@
   
   pg_close();
 ?>
-	<?php echo "<a href=\"https://cs564.cs.wisc.edu/nmurray/index.html\">Back to index</a>\n"?>
+	<?php echo "<a href=\"https://cs564.cs.wisc.edu/nmurray/update.html\">Back to update page</a>\n"?>
 
 </body>
 </html>
