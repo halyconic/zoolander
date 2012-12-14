@@ -42,64 +42,97 @@ function get_basic($pg_conn)
 
 # Advanced query
 # http://www.postgresql.org/docs/9.1/static/sql-select.html
-function get_advanced($pg_conn, $table_args)
+function get_advanced($pg_conn, $table_args, $table_commands)
 {
     $query = 'SELECT sname, sqftneed, wateramt, num FROM species';
 
-    $is_first = true;
+    $param_num = 1;
+
+    $stack = array();
 
     # check if both params exist before appending to query
-    if (isset($table_args['sname'])) {
-        if (isset($table_args['operator_name'])) {
-            if ($is_first) {
+    if (isset($table_commands['sname'])) {
+        if (isset($table_args['operator_name']) && $table_args['operator_name'] != 'none') {
+            if ($param_num == 1) {
                 $query = $query . ' WHERE';
-                $is_first = false;
             }
             else {
                 $query = $query . ' AND';
             }
+
+            if ($table_args['operator_name'] == 'exactly') {
+                $query = $query . ' sname=$' . $param_num;
+            }
+            else if ($table_args['operator_name'] == 'like') {
+                # TODO            
+                $query = $query . ' sname=$' . $param_num;
+            }
+            else if ($table_args['operator_name'] == 'unlike') {
+                # TODO            
+                $query = $query . ' sname=$' . $param_num;
+            }
+
+            $query = $query . '$' . $param_num;
+
+            # Add to array
+            $stack[] = $table_commands['sname'];
+            $param_num++;
         }
     }
-    if (isset($table_args['sqftneed'])) {
-        if (isset($table_args['operator_sqft'])) {
-            if ($is_first) {
+    if (isset($table_commands['sqftneed'])) {
+        if (isset($table_args['operator_sqft']) && $table_args['operator_sqft'] != 'none') {
+            if ($param_num == 1) {
                 $query = $query . ' WHERE';
-                $is_first = false;
             }
             else {
                 $query = $query . ' AND';
             }
+
+            $query = $query . ' sqftneed' . $table_args['operator_sqft'] . ' $' . $param_num;
+
+            # Add to array
+            $stack[] = $table_commands['sqftneed'];
+            $param_num++;
         }
     }
-    if (isset($table_args['wateramt'])) {
-        if (isset($table_args['operator_water'])) {
-            if ($is_first) {
+    if (isset($table_commands['wateramt'])) {
+        if (isset($table_args['operator_water']) && $table_args['operator_water'] != 'none') {
+            if ($param_num == 1) {
                 $query = $query . ' WHERE';
-                $is_first = false;
             }
             else {
                 $query = $query . ' AND';
             }
+
+            $query = $query . ' wateramt' . $table_args['operator_water'] . ' $' . $param_num;
+
+            # Add to array
+            $stack[] = $table_commands['wateramt'];
+            $param_num++;
         }
     }
-    if (isset($table_args['num'])) {
-        if (isset($table_args['operator_num'])) {
-            if ($is_first) {
-                $query = $query . ' WHERE';
-                $is_first = false;
+    if (isset($table_commands['num'])) {
+        if (isset($table_args['operator_num']) && $table_args['operator_num'] != 'none') {
+            if ($param_num == 1) {
+                $query = $query . ' WHERE ';
             }
             else {
-                $query = $query . ' AND';
+                $query = $query . ' AND ';
             }
+
+            $query = $query . ' num' . $table_args['operator_num'] . ' $' . $param_num;
+
+            # Add to array
+            $stack[] = $table_commands['num'];
+            $param_num++;
         }
     }
 
-
-
-    $result = pg_query($pg_conn, $pq_query);
+    $result = pg_query_params($pg_conn, $query, $stack);
 
     if (!$result) {
         echo "An error occured.\n";
+        echo $query;
         exit;
     }
 
