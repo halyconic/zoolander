@@ -10,10 +10,12 @@
       Basic search results (searched by name):<br>
        <table border="1" width="75%">
         <tr>
+	 <td align="center" bgcolor="#cccccc"><b>Species ID</b></td>
          <td align="center" bgcolor="#cccccc"><b>Name of Animal</b></td>
          <td align="center" bgcolor="#cccccc"><b>Number of Animal</b></td>
          <td align="center" bgcolor="#cccccc"><b>Square Footage Needed</b></td>
 	 <td align="center" bgcolor="#cccccc"><b>Liters of water per day</b></td>
+	 <td align="center" bgcolor="#cccccc"><b>Exhibit ID</b></td>
         </tr>
 
 <?php
@@ -48,6 +50,9 @@
 
 	while($row = pg_fetch_array($result,NULL,PGSQL_ASSOC)) {
     	    echo "        <tr>";
+	    echo "\n         <td align=\"center\">";
+	    echo "\n          ".$row['sid'];
+	    echo "\n         </td>";
     	    echo "\n         <td align=\"center\">";
 	    echo "\n          ".$row['sname'];
     	    echo "\n         </td>";
@@ -59,6 +64,9 @@
     	    echo "\n         </td>";
 	    echo "\n         <td align=\"center\">";
 	    echo "\n          ".$row['wateramt'];
+	    echo "\n         </td>";
+	    echo "\n         <td align=\"center\">";
+	    echo "\n          ".$row['eid'];
 	    echo "\n         </td>";
     	    echo "\n        </tr>";
 	}

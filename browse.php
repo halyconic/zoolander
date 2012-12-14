@@ -34,6 +34,9 @@
 	//Print results
 	while($row = pg_fetch_array($result,NULL,PGSQL_ASSOC)) {
 	   echo "        <tr>";
+	   echo "\n         <td align=\"center\">";
+	   echo "\n          ".$row['sid'];
+	   echo "\n         </td>";
     	   echo "\n         <td align=\"center\">";
 	   echo "\n          ".$row['sname'];
     	   echo "\n         </td>";
@@ -45,6 +48,9 @@
     	   echo "\n         </td>";
 	   echo "\n         <td align=\"center\">";
 	   echo "\n          ".$row['wateramt'];
+	   echo "\n         </td>";
+	   echo "\n         <td align=\"center\">";
+	   echo "\n          ".$row['eid'];
 	   echo "\n         </td>";
     	   echo "\n        </tr>";
 	}
