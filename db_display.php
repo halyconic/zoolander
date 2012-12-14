@@ -46,6 +46,11 @@ function get_advanced($pg_conn, $table_args, $table_commands)
 {
     $query = 'SELECT sname, sqftneed, wateramt, num FROM zoolander_schema.species';
 
+    #print_r($table_args);
+    #print_r($table_commands);
+    #print($table_args['operator_name']);
+    #print($table_args['operator_name']);
+
     $param_num = 1;
 
     $stack = array();
@@ -62,18 +67,18 @@ function get_advanced($pg_conn, $table_args, $table_commands)
 
             if ($table_args['operator_name'] == 'exactly') {
                 $query = $query . ' sname=$' . $param_num;
+                $stack[] = $table_commands['sname'];
             }
             else if ($table_args['operator_name'] == 'like') {
-                # TODO            
-                $query = $query . ' sname=$' . $param_num;
+                $query = $query . ' sname LIKE $' . $param_num;
+                $stack[] = '%' . $table_commands['sname'] . '%';
             }
             else if ($table_args['operator_name'] == 'unlike') {
-                # TODO            
-                $query = $query . ' sname=$' . $param_num;
+                $query = $query . ' sname NOT LIKE $' . $param_num;
+                $stack[] = '%' . $table_commands['sname'] . '%';
             }
 
             # Add to array
-            $stack[] = $table_commands['sname'];
             $param_num++;
         }
     }
@@ -138,9 +143,9 @@ function get_advanced($pg_conn, $table_args, $table_commands)
 
     # print here
 
-    echo "<p>";
-    echo $query;
-    echo "</p>\n";
+    #echo "<p>";
+    #echo $query;
+    #echo "</p>\n";
 
     while($row = pg_fetch_array($result,NULL,PGSQL_ASSOC)) {
         echo "        <tr>";

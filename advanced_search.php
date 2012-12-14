@@ -27,8 +27,8 @@ require_once('db_display.php');
             <?php
                 # Displays the result of the query
 
-                $table_commands = array($_POST['sname'], $_POST['sqftneed'], $_POST['wateramt'], $_POST['num']);
-                $table_args = array($_POST['operator_name'], $_POST['operator_sqft'], $_POST['operator_water'], $_POST['operator_num']);      
+                $table_commands = array('sname' => $_POST['sname'], 'sqftneed' => $_POST['sqftneed'], 'wateramt' => $_POST['wateramt'], 'num' => $_POST['num']);
+                $table_args = array('operator_name' => $_POST['operator_name'], 'operator_sqft' => $_POST['operator_sqft'], 'operator_water' => $_POST['operator_water'], 'operator_num' => $_POST['operator_num']);      
 
                 $pg_conn = pg_connect('dbname=cs564_f12 host=postgres.cs.wisc.edu')
 		            or die ("Couldn't Connect ".pg_last_error());
