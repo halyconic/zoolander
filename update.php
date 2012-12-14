@@ -14,7 +14,7 @@ require_once('db_display.php');
     <p>
     <?php
         # Displays the result of the query
-        get_advanced($pg_conn);
+        get_update($pg_conn);
     ?>
     </p>
 </body>
